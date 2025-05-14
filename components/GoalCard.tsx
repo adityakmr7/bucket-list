@@ -13,7 +13,7 @@ interface GoalCardProps {
 
 export default function GoalCard({ goal, onPress }: GoalCardProps) {
   const router = useRouter();
-  
+  console.log("goal--target", goal.target);
   const daysRemaining = () => {
     const today = new Date();
     const targetDate = new Date(goal.target);
@@ -39,29 +39,29 @@ export default function GoalCard({ goal, onPress }: GoalCardProps) {
       <View style={[styles.colorBar, { backgroundColor: goal.color }]} />
       <View style={styles.contentContainer}>
         <View style={styles.headerRow}>
-          <Text 
+          <Text
             style={styles.title}
             numberOfLines={1}
             ellipsizeMode="tail"
           >
             {goal.title}
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.settingsButton}
             onPress={() => console.log('Edit goal')}
           >
             <Settings2 size={18} color="#64748B" />
           </TouchableOpacity>
         </View>
-        
-        <Text 
+
+        <Text
           style={styles.description}
           numberOfLines={2}
           ellipsizeMode="tail"
         >
           {goal.description}
         </Text>
-        
+
         <View style={styles.statsRow}>
           <View style={styles.progressContainer}>
             <ProgressCircle
@@ -72,7 +72,7 @@ export default function GoalCard({ goal, onPress }: GoalCardProps) {
               backgroundColor="#E2E8F0"
             />
           </View>
-          
+
           <View style={styles.infoContainer}>
             <View style={styles.dateContainer}>
               <Calendar size={16} color="#64748B" />
@@ -80,13 +80,13 @@ export default function GoalCard({ goal, onPress }: GoalCardProps) {
                 Target: {format(new Date(goal.target), 'MMM d, yyyy')}
               </Text>
             </View>
-            
+
             <View style={styles.milestoneInfo}>
               <Text style={styles.milestoneText}>
                 {goal.milestones.filter(m => m.completed).length} of {goal.milestones.length} milestones completed
               </Text>
             </View>
-            
+
             <View style={styles.remainingContainer}>
               <Text style={[styles.remainingText, { color: goal.color }]}>
                 {daysRemaining()} days remaining
@@ -94,9 +94,9 @@ export default function GoalCard({ goal, onPress }: GoalCardProps) {
             </View>
           </View>
         </View>
-        
+
         <View style={styles.footer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.detailsButton}
             onPress={handlePress}
           >

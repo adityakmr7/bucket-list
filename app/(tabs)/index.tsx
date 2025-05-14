@@ -8,28 +8,28 @@ import { useRouter } from 'expo-router';
 export default function Dashboard() {
   const { goals } = useGoals();
   const router = useRouter();
-  
+
   // Calculate overall progress across all goals
   const overallProgress = goals.length > 0
     ? Math.round(goals.reduce((sum, goal) => sum + goal.progress, 0) / goals.length)
     : 0;
-  
+
   // Find the next upcoming deadline
   const upcomingDeadline = goals.length > 0
     ? goals
-        .filter(goal => !goal.completedAt)
-        .sort((a, b) => new Date(a.target).getTime() - new Date(b.target).getTime())[0]
+      .filter(goal => !goal.completedAt)
+      .sort((a, b) => new Date(a.target).getTime() - new Date(b.target).getTime())[0]
     : null;
-  
+
   const completedGoals = goals.filter(goal => goal.progress === 100).length;
-  
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
         <Text style={styles.greeting}>Hello there!</Text>
         <Text style={styles.subGreeting}>Track your life goals and make progress daily</Text>
       </View>
-      
+
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
           <View style={styles.statIconContainer}>
@@ -38,7 +38,7 @@ export default function Dashboard() {
           <Text style={styles.statValue}>{goals.length}</Text>
           <Text style={styles.statLabel}>Active Goals</Text>
         </View>
-        
+
         <View style={styles.statCard}>
           <View style={[styles.statIconContainer, { backgroundColor: '#EBFBEE' }]}>
             <Trophy size={24} color="#10B981" />
@@ -46,7 +46,7 @@ export default function Dashboard() {
           <Text style={styles.statValue}>{completedGoals}</Text>
           <Text style={styles.statLabel}>Completed</Text>
         </View>
-        
+
         <View style={styles.statCard}>
           <View style={styles.progressCircle}>
             <Text style={styles.progressText}>{overallProgress}%</Text>
@@ -54,23 +54,23 @@ export default function Dashboard() {
           <Text style={styles.statLabel}>Overall Progress</Text>
         </View>
       </View>
-      
+
       {upcomingDeadline && (
         <View style={styles.deadlineContainer}>
           <Text style={styles.sectionTitle}>Next Deadline</Text>
           <View style={styles.deadlineCard}>
             <Text style={styles.deadlineGoal}>{upcomingDeadline.title}</Text>
             <Text style={styles.deadlineDate}>
-              {new Date(upcomingDeadline.target).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
+              {new Date(upcomingDeadline.target).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
               })}
             </Text>
           </View>
         </View>
       )}
-      
+
       <View style={styles.recentContainer}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recent Goals</Text>
@@ -78,7 +78,7 @@ export default function Dashboard() {
             <Text style={styles.viewAllText}>View All</Text>
           </TouchableOpacity>
         </View>
-        
+
         {goals.length > 0 ? (
           goals
             .slice(0, 3)
@@ -86,7 +86,7 @@ export default function Dashboard() {
         ) : (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No goals created yet</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.createButton}
               onPress={() => router.push('/add')}
             >

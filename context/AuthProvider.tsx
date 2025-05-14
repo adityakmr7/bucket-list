@@ -40,8 +40,26 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
+    // Load stored user data on mount
     useEffect(() => {
+        const loadStoredUser = async () => {
+            try {
+                const storedUser = await SecureStore.getItemAsync('user');
+                if (storedUser) {
+                    setUser(JSON.parse(storedUser));
+                }
+            } catch (error) {
+                console.error('Error loading stored user:', error);
+            }
+        };
+
+        loadStoredUser();
+    }, []);
+
+    useEffect(() => {
+        console.log("Setting up auth state listener");
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+            console.log("Auth state changed:", firebaseUser?.uid);
             if (firebaseUser) {
                 const userData: User = {
                     uid: firebaseUser.uid,
@@ -50,20 +68,31 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
                     photoURL: firebaseUser.photoURL,
                 };
                 setUser(userData);
-                await SecureStore.setItemAsync('user', JSON.stringify(userData));
+                try {
+                    await SecureStore.setItemAsync('user', JSON.stringify(userData));
+                } catch (error) {
+                    console.error('Error storing user data:', error);
+                }
             } else {
                 setUser(null);
-                await SecureStore.deleteItemAsync('user');
+                try {
+                    await SecureStore.deleteItemAsync('user');
+                } catch (error) {
+                    console.error('Error removing stored user data:', error);
+                }
             }
             setLoading(false);
         });
 
-        // Cleanup subscription
-        return unsubscribe;
+        return () => {
+            console.log("Cleaning up auth state listener");
+            unsubscribe();
+        };
     }, []);
 
     const login = async (email: string, password: string): Promise<AuthResult> => {
         try {
+            console.log("Attempting login for:", email);
             const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
             const userData: User = {
                 uid: userCredential.user.uid,
@@ -71,6 +100,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
                 displayName: userCredential.user.displayName,
                 photoURL: userCredential.user.photoURL,
             };
+            console.log("Login successful for user:", userData.uid);
             router.replace('/');
             return { success: true, user: userData };
         } catch (error) {

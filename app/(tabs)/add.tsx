@@ -8,12 +8,15 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from 'react-native';
 import { useGoals } from '@/context/GoalContext';
 import { useRouter } from 'expo-router';
 import { GoalCategory, CATEGORY_COLORS } from '@/types/goal';
 import { Calendar, Plus, Target } from 'lucide-react-native';
 import CategoryPicker from '@/components/CategoryPicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 export default function AddGoalScreen() {
   const { addGoal } = useGoals();
@@ -25,6 +28,9 @@ export default function AddGoalScreen() {
   const [targetDate, setTargetDate] = useState<Date>(
     new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) // Default to 30 days from now
   );
+  const [mode, setMode] = useState<'date' | 'time'>('date');
+  const [show, setShow] = useState(false);
+
   const [milestones, setMilestones] = useState<
     { id: string; title: string; completed: boolean }[]
   >([]);
@@ -80,6 +86,17 @@ export default function AddGoalScreen() {
     });
   };
 
+  const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShow(false);
+    if (selectedDate) {
+      setTargetDate(selectedDate);
+    }
+  };
+
+  const showDatepicker = () => {
+    setShow(true);
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -124,10 +141,7 @@ export default function AddGoalScreen() {
           <Text style={styles.label}>Target Date</Text>
           <TouchableOpacity
             style={styles.datePickerButton}
-            onPress={() => {
-              // In a real app, we'd open a date picker here
-              console.log('Open date picker');
-            }}
+            onPress={showDatepicker}
           >
             <Calendar size={20} color="#3B82F6" />
             <Text style={styles.dateText}>{formatDate(targetDate)}</Text>
@@ -187,6 +201,51 @@ export default function AddGoalScreen() {
           <Text style={styles.createButtonText}>Create Goal</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Date picker handling based on platform */}
+      {show && (Platform.OS === 'ios' ? (
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={show}
+        >
+          <View style={styles.datePickerModalContainer}>
+            <View style={styles.datePickerModal}>
+              <View style={styles.datePickerHeader}>
+                <TouchableOpacity onPress={() => setShow(false)}>
+                  <Text style={styles.datePickerCancelButton}>Cancel</Text>
+                </TouchableOpacity>
+                <Text style={styles.datePickerTitle}>Select Date</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShow(false);
+                  }}
+                >
+                  <Text style={styles.datePickerDoneButton}>Done</Text>
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={targetDate}
+                mode={mode}
+                is24Hour={true}
+                display="spinner"
+                onChange={onChange}
+                style={styles.datePickerIOS}
+              />
+            </View>
+          </View>
+        </Modal>
+      ) : (
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={targetDate}
+          mode={mode}
+          is24Hour={true}
+          onChange={onChange}
+          display="default"
+        />
+      ))}
     </KeyboardAvoidingView>
   );
 }
@@ -334,5 +393,46 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     color: '#FFFFFF',
+  },
+  // New styles for date picker modal
+  datePickerModalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  datePickerModal: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingBottom: 20,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+
+  datePickerTitle: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 16,
+    color: '#1E293B',
+  },
+  datePickerCancelButton: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 16,
+    color: '#3B82F6',
+  },
+  datePickerDoneButton: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 16,
+    color: '#3B82F6',
+  },
+  datePickerIOS: {
+    height: 220,
+    paddingLeft: 32 * 2,
+    width: '100%'
   },
 });

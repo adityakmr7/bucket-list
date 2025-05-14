@@ -1,15 +1,20 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Goal, Milestone } from '@/types/goal';
+import { ref, set, onValue, remove, Database, get } from 'firebase/database';
+import { auth, db } from '@/config/firebase';
+import { useAuth } from './AuthProvider';
 
 interface GoalContextType {
   goals: Goal[];
-  addGoal: (goal: Goal) => void;
-  updateGoal: (goalId: string, updatedGoal: Partial<Goal>) => void;
-  deleteGoal: (goalId: string) => void;
-  toggleMilestoneCompleted: (goalId: string, milestoneId: string) => void;
-  addMilestone: (goalId: string, milestone: Milestone) => void;
-  deleteMilestone: (goalId: string, milestoneId: string) => void;
-  updateMilestone: (goalId: string, milestoneId: string, updatedMilestone: Partial<Milestone>) => void;
+  loading: boolean;
+  error: string | null;
+  addGoal: (goal: Goal) => Promise<void>;
+  updateGoal: (goalId: string, updatedGoal: Partial<Goal>) => Promise<void>;
+  deleteGoal: (goalId: string) => Promise<void>;
+  toggleMilestoneCompleted: (goalId: string, milestoneId: string) => Promise<void>;
+  addMilestone: (goalId: string, milestone: Milestone) => Promise<void>;
+  deleteMilestone: (goalId: string, milestoneId: string) => Promise<void>;
+  updateMilestone: (goalId: string, milestoneId: string, updatedMilestone: Partial<Milestone>) => Promise<void>;
   getGoalProgress: (goalId: string) => number;
 }
 
@@ -20,146 +25,179 @@ interface GoalProviderProps {
 }
 
 export const GoalProvider = ({ children }: GoalProviderProps) => {
-  const [goals, setGoals] = useState<Goal[]>([
-    {
-      id: '1',
-      title: 'Learn French',
-      description: 'Become conversational in French within 1 year',
-      category: 'education',
-      color: '#FF6B6B',
-      target: new Date('2024-12-31'),
-      createdAt: new Date('2023-12-31'),
-      progress: 25,
-      milestones: [
-        { id: '1-1', title: 'Learn 500 basic words', completed: true },
-        { id: '1-2', title: 'Complete beginner course', completed: true },
-        { id: '1-3', title: 'Have first conversation', completed: false },
-        { id: '1-4', title: 'Read first book in French', completed: false },
-      ],
-      reminderFrequency: 'weekly',
-    },
-    {
-      id: '2',
-      title: 'Run a Marathon',
-      description: 'Complete a full marathon',
-      category: 'fitness',
-      color: '#4ECDC4',
-      target: new Date('2024-10-15'),
-      createdAt: new Date('2023-10-15'),
-      progress: 40,
-      milestones: [
-        { id: '2-1', title: 'Run 5K without stopping', completed: true },
-        { id: '2-2', title: 'Complete a 10K race', completed: true },
-        { id: '2-3', title: 'Run a half marathon', completed: false },
-        { id: '2-4', title: 'Complete marathon training', completed: false },
-      ],
-      reminderFrequency: 'daily',
-    },
-    {
-      id: '3',
-      title: 'Write a Novel',
-      description: 'Complete a 50,000 word fiction novel',
-      category: 'creative',
-      color: '#FFD166',
-      target: new Date('2025-06-30'),
-      createdAt: new Date('2023-07-01'),
-      progress: 15,
-      milestones: [
-        { id: '3-1', title: 'Outline story and characters', completed: true },
-        { id: '3-2', title: 'Write first chapter', completed: false },
-        { id: '3-3', title: 'Complete first draft', completed: false },
-        { id: '3-4', title: 'Edit and finalize manuscript', completed: false },
-      ],
-      reminderFrequency: 'weekly',
-    },
-  ]);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  const addGoal = (goal: Goal) => {
-    setGoals((prevGoals) => [...prevGoals, goal]);
-  };
+  useEffect(() => {
+    if (!user) {
+      setGoals([]);
+      setLoading(false);
+      return;
+    }
 
-  const updateGoal = (goalId: string, updatedGoal: Partial<Goal>) => {
-    setGoals((prevGoals) =>
-      prevGoals.map((goal) =>
-        goal.id === goalId ? { ...goal, ...updatedGoal } : goal
-      )
-    );
-  };
+    const goalsRef = ref(db, `users/${user.uid}/goals`);
+    console.log("Setting up goals listener for user:", user.uid);
 
-  const deleteGoal = (goalId: string) => {
-    setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
-  };
+    // Listen for real-time updates
+    const unsubscribe = onValue(goalsRef, (snapshot) => {
+      try {
+        const data = snapshot.val();
+        console.log("Firebase data received:", data);
 
-  const toggleMilestoneCompleted = (goalId: string, milestoneId: string) => {
-    setGoals((prevGoals) =>
-      prevGoals.map((goal) => {
-        if (goal.id === goalId) {
-          const updatedMilestones = goal.milestones.map((milestone) =>
-            milestone.id === milestoneId
-              ? { ...milestone, completed: !milestone.completed }
-              : milestone
-          );
-
-          // Calculate new progress based on completed milestones
-          const completedCount = updatedMilestones.filter(m => m.completed).length;
-          const totalCount = updatedMilestones.length;
-          const newProgress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-
-          return {
+        if (data) {
+          // Convert the object to an array and parse dates
+          const goalsArray = Object.entries(data).map(([id, goal]: [string, any]) => ({
             ...goal,
-            milestones: updatedMilestones,
-            progress: newProgress
-          };
+            id,
+            target: new Date(goal.target),
+            createdAt: new Date(goal.createdAt),
+            milestones: goal.milestones || []
+          })) as Goal[];
+
+          console.log("Processed goals array:", goalsArray);
+          setGoals(goalsArray);
+        } else {
+          console.log("No goals data found");
+          setGoals([]);
         }
-        return goal;
-      })
-    );
+        setError(null);
+      } catch (err) {
+        console.error("Error processing goals data:", err);
+        setError("Failed to load goals");
+      } finally {
+        setLoading(false);
+      }
+    }, (error) => {
+      console.error("Firebase error:", error);
+      setError("Failed to connect to database");
+      setLoading(false);
+    });
+
+    return () => {
+      console.log("Cleaning up goals listener");
+      unsubscribe();
+    };
+  }, [user]);
+
+  const addGoal = async (goal: Goal) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("User not authenticated");
+
+      const goalRef = ref(db, `users/${user.uid}/goals/${goal.id}`);
+      await set(goalRef, {
+        ...goal,
+        target: goal.target.toISOString(),
+        createdAt: goal.createdAt.toISOString()
+      });
+    } catch (err) {
+      console.error("Error adding goal:", err);
+      throw err;
+    }
   };
 
-  const addMilestone = (goalId: string, milestone: Milestone) => {
-    setGoals((prevGoals) =>
-      prevGoals.map((goal) => {
-        if (goal.id === goalId) {
-          const updatedMilestones = [...goal.milestones, milestone];
-          return { ...goal, milestones: updatedMilestones };
-        }
-        return goal;
-      })
-    );
+  const updateGoal = async (goalId: string, updatedGoal: Partial<Goal>) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("User not authenticated");
+
+      const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
+      const currentGoal = goals.find(g => g.id === goalId);
+      if (!currentGoal) throw new Error("Goal not found");
+
+      const updatedData = {
+        ...currentGoal,
+        ...updatedGoal,
+        target: updatedGoal.target ? updatedGoal.target.toISOString() : currentGoal.target.toISOString(),
+        createdAt: currentGoal.createdAt.toISOString()
+      };
+
+      await set(goalRef, updatedData);
+    } catch (err) {
+      console.error("Error updating goal:", err);
+      throw err;
+    }
   };
 
-  const deleteMilestone = (goalId: string, milestoneId: string) => {
-    setGoals((prevGoals) =>
-      prevGoals.map((goal) => {
-        if (goal.id === goalId) {
-          const updatedMilestones = goal.milestones.filter(
-            (milestone) => milestone.id !== milestoneId
-          );
-          return { ...goal, milestones: updatedMilestones };
-        }
-        return goal;
-      })
-    );
+  const deleteGoal = async (goalId: string) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
+    await remove(goalRef);
   };
 
-  const updateMilestone = (
+  const toggleMilestoneCompleted = async (goalId: string, milestoneId: string) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    const updatedMilestones = goal.milestones.map((milestone) =>
+      milestone.id === milestoneId
+        ? { ...milestone, completed: !milestone.completed }
+        : milestone
+    );
+
+    const completedCount = updatedMilestones.filter(m => m.completed).length;
+    const totalCount = updatedMilestones.length;
+    const newProgress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+    const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
+    await set(goalRef, {
+      ...goal,
+      milestones: updatedMilestones,
+      progress: newProgress
+    });
+  };
+
+  const addMilestone = async (goalId: string, milestone: Milestone) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    const updatedMilestones = [...goal.milestones, milestone];
+    const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
+    await set(goalRef, { ...goal, milestones: updatedMilestones });
+  };
+
+  const deleteMilestone = async (goalId: string, milestoneId: string) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    const updatedMilestones = goal.milestones.filter(
+      (milestone) => milestone.id !== milestoneId
+    );
+    const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
+    await set(goalRef, { ...goal, milestones: updatedMilestones });
+  };
+
+  const updateMilestone = async (
     goalId: string,
     milestoneId: string,
     updatedMilestone: Partial<Milestone>
   ) => {
-    setGoals((prevGoals) =>
-      prevGoals.map((goal) => {
-        if (goal.id === goalId) {
-          const updatedMilestones = goal.milestones.map((milestone) =>
-            milestone.id === milestoneId
-              ? { ...milestone, ...updatedMilestone }
-              : milestone
-          );
-          return { ...goal, milestones: updatedMilestones };
-        }
-        return goal;
-      })
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    const updatedMilestones = goal.milestones.map((milestone) =>
+      milestone.id === milestoneId
+        ? { ...milestone, ...updatedMilestone }
+        : milestone
     );
+    const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
+    await set(goalRef, { ...goal, milestones: updatedMilestones });
   };
 
   const getGoalProgress = (goalId: string): number => {
@@ -177,6 +215,8 @@ export const GoalProvider = ({ children }: GoalProviderProps) => {
     <GoalContext.Provider
       value={{
         goals,
+        loading,
+        error,
         addGoal,
         updateGoal,
         deleteGoal,
