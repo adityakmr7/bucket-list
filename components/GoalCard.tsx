@@ -13,7 +13,6 @@ interface GoalCardProps {
 
 export default function GoalCard({ goal, onPress }: GoalCardProps) {
   const router = useRouter();
-  console.log("goal--target", goal.target);
   const daysRemaining = () => {
     const today = new Date();
     const targetDate = new Date(goal.target);
