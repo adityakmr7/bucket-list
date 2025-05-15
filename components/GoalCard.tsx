@@ -5,7 +5,7 @@ import ProgressCircle from './ProgressCircle';
 import { Goal } from '@/types/goal';
 import { Settings2, ChevronRight, Calendar } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-
+import { daysRemaining, formDateTime } from '@/utils';
 interface GoalCardProps {
   goal: Goal;
   onPress?: () => void;
@@ -13,13 +13,7 @@ interface GoalCardProps {
 
 export default function GoalCard({ goal, onPress }: GoalCardProps) {
   const router = useRouter();
-  const daysRemaining = () => {
-    const today = new Date();
-    const targetDate = new Date(goal.target);
-    const diffTime = Math.abs(targetDate.getTime() - today.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
+
 
   const handlePress = () => {
     if (onPress) {
@@ -33,6 +27,7 @@ export default function GoalCard({ goal, onPress }: GoalCardProps) {
     }
   };
 
+  const remainingDay = daysRemaining(goal) || 0;
   return (
     <TouchableOpacity onPress={handlePress} style={styles.cardContainer}>
       <View style={[styles.colorBar, { backgroundColor: goal.color }]} />
@@ -76,7 +71,7 @@ export default function GoalCard({ goal, onPress }: GoalCardProps) {
             <View style={styles.dateContainer}>
               <Calendar size={16} color="#64748B" />
               <Text style={styles.dateText}>
-                Target: {format(new Date(goal.target), 'MMM d, yyyy')}
+                Target: {formDateTime(goal) || ''}
               </Text>
             </View>
 
@@ -88,7 +83,8 @@ export default function GoalCard({ goal, onPress }: GoalCardProps) {
 
             <View style={styles.remainingContainer}>
               <Text style={[styles.remainingText, { color: goal.color }]}>
-                {daysRemaining()} days remaining
+                {remainingDay} days remaining
+
               </Text>
             </View>
           </View>

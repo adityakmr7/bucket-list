@@ -4,14 +4,15 @@ import { format } from 'date-fns';
 import { Goal } from '@/types/goal';
 import { Settings2, ChevronRight, Calendar } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import Animated, { 
-  FadeInRight, 
+import Animated, {
+  FadeInRight,
   FadeOutLeft,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
 import AnimatedProgressCircle from './AnimatedProgressCircle';
+import { daysRemaining, formDateTime } from '@/utils';
 
 interface GoalCardProps {
   goal: Goal;
@@ -22,7 +23,7 @@ interface GoalCardProps {
 export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps) {
   const router = useRouter();
   const scale = useSharedValue(1);
-  
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [{ scale: scale.value }],
@@ -37,13 +38,7 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
     scale.value = withSpring(1);
   };
 
-  const daysRemaining = () => {
-    const today = new Date();
-    const targetDate = new Date(goal.target);
-    const diffTime = Math.abs(targetDate.getTime() - today.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
+
 
   const handlePress = () => {
     if (onPress) {
@@ -56,6 +51,7 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
     }
   };
 
+  const dayRemaing = daysRemaining(goal);
   return (
     <Animated.View
       entering={FadeInRight.delay(index * 100)}
@@ -71,29 +67,29 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
         <View style={[styles.colorBar, { backgroundColor: goal.color }]} />
         <View style={styles.contentContainer}>
           <View style={styles.headerRow}>
-            <Text 
+            <Text
               style={styles.title}
               numberOfLines={1}
               ellipsizeMode="tail"
             >
               {goal.title}
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.settingsButton}
               onPress={() => console.log('Edit goal')}
             >
               <Settings2 size={18} color="#64748B" />
             </TouchableOpacity>
           </View>
-          
-          <Text 
+
+          <Text
             style={styles.description}
             numberOfLines={2}
             ellipsizeMode="tail"
           >
             {goal.description}
           </Text>
-          
+
           <View style={styles.statsRow}>
             <View style={styles.progressContainer}>
               <AnimatedProgressCircle
@@ -104,31 +100,31 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
                 backgroundColor="#E2E8F0"
               />
             </View>
-            
+
             <View style={styles.infoContainer}>
               <View style={styles.dateContainer}>
                 <Calendar size={16} color="#64748B" />
                 <Text style={styles.dateText}>
-                  Target: {format(new Date(goal.target), 'MMM d, yyyy')}
+                  Target: {formDateTime(goal)}
                 </Text>
               </View>
-              
+
               <View style={styles.milestoneInfo}>
                 <Text style={styles.milestoneText}>
                   {goal.milestones.filter(m => m.completed).length} of {goal.milestones.length} milestones completed
                 </Text>
               </View>
-              
+
               <View style={styles.remainingContainer}>
                 <Text style={[styles.remainingText, { color: goal.color }]}>
-                  {daysRemaining()} days remaining
+                  {dayRemaing} days remaining
                 </Text>
               </View>
             </View>
           </View>
-          
+
           <View style={styles.footer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.detailsButton}
               onPress={handlePress}
             >
