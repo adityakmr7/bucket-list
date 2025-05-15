@@ -40,6 +40,7 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(goalDetails)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" options={{ title: 'Oops!' }} />
         </Stack>
       </GoalProvider>

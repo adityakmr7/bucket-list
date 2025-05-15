@@ -1,22 +1,11 @@
 import React, { JSX, createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
-import {
-    Auth,
-    User as FirebaseUser,
-    UserCredential,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut as firebaseSignOut,
-    onAuthStateChanged,
-    updateProfile,
-    AuthError,
-    sendPasswordResetEmail,
-} from 'firebase/auth';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import { auth } from '../config/firebase';
 import { User, AuthResult } from '@/types/auth';
+import { supabase } from '@/utils/supabase';
+import { Alert } from 'react-native';
+import { AuthError } from '@supabase/supabase-js'
 
 // Ensure WebBrowser redirects are handled
 WebBrowser.maybeCompleteAuthSession();
@@ -58,14 +47,12 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
 
     useEffect(() => {
         console.log("Setting up auth state listener");
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
-            console.log("Auth state changed:", firebaseUser?.uid);
-            if (firebaseUser) {
+        const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+
+            if (session) {
                 const userData: User = {
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    displayName: firebaseUser.displayName,
-                    photoURL: firebaseUser.photoURL,
+                    id: session.user.id,
+                    email: session.user?.email || '',
                 };
                 setUser(userData);
                 try {
@@ -84,64 +71,58 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
             setLoading(false);
         });
 
-        return () => {
-            console.log("Cleaning up auth state listener");
-            unsubscribe();
-        };
+        return () => data.subscription.unsubscribe();
+
     }, []);
 
     const login = async (email: string, password: string): Promise<AuthResult> => {
         try {
             console.log("Attempting login for:", email);
-            const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
-            const userData: User = {
-                uid: userCredential.user.uid,
-                email: userCredential.user.email,
-                displayName: userCredential.user.displayName,
-                photoURL: userCredential.user.photoURL,
-            };
-            console.log("Login successful for user:", userData.uid);
+            const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+
             router.replace('/');
-            return { success: true, user: userData };
+            if (error) Alert.alert(error.message)
+            setLoading(false)
+            return { success: true };
+
         } catch (error) {
             console.error('Login failed', error);
             return {
                 success: false,
-                error: getAuthErrorMessage(error as AuthError)
             };
         }
     };
 
     const register = async (email: string, password: string, name: string): Promise<AuthResult> => {
         try {
-            const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const { data: { session },
+                error, } = await supabase.auth.signUp({
+                    email,
+                    password,
+                })
 
             // Update profile to add display name
-            await updateProfile(userCredential.user, {
-                displayName: name
-            });
+            // await updateProfile(us.user, {
+            //     displayName: name
+            // });
 
-            const userData: User = {
-                uid: userCredential.user.uid,
-                email: userCredential.user.email,
-                displayName: name,
-                photoURL: userCredential.user.photoURL,
-            };
 
+            if (error) Alert.alert(error.message)
+            if (!session) Alert.alert('Please check your inbox for email verification!')
+            setLoading(false)
             router.replace('/');
-            return { success: true, user: userData };
+            return { success: true };
         } catch (error) {
             console.error('Registration failed', error);
             return {
                 success: false,
-                error: getAuthErrorMessage(error as AuthError)
             };
         }
     };
 
     const logout = async (): Promise<void> => {
         try {
-            await firebaseSignOut(auth);
+            await supabase.auth.signOut();
             router.replace('/login');
         } catch (error) {
             console.error('Logout failed', error);
@@ -150,13 +131,12 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
 
     const resetPassword = async (email: string): Promise<AuthResult> => {
         try {
-            await sendPasswordResetEmail(auth, email);
+            await supabase.auth.resetPasswordForEmail(email);
             return { success: true };
         } catch (error) {
             console.error('Password reset failed', error);
             return {
                 success: false,
-                error: getAuthErrorMessage(error as AuthError)
             };
         }
     };
