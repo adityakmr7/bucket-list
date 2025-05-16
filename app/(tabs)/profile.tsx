@@ -3,10 +3,12 @@ import { ActivityIndicator, View, Text, StyleSheet, ScrollView, TouchableOpacity
 import { Bell, ChevronRight, Shield, CircleHelp as HelpCircle, LogOut, Award, Settings, Moon } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthProvider';
 import useProfile from '@/hooks/useProfile';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function ProfileScreen() {
   const { logout, user } = useAuth();
   const { loading, profile, achievements } = useProfile();
+  const { isDark, toggleTheme, getColor } = useTheme();
 
   const handleLogout = async () => {
     await logout();
@@ -15,7 +17,7 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <ActivityIndicator size="large" color={getColor('primary')} />
       </View>
     );
   }
@@ -31,41 +33,41 @@ export default function ProfileScreen() {
     : 0;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={[styles.container, { backgroundColor: getColor('background') }]} contentContainerStyle={styles.contentContainer}>
       <View style={styles.profileHeader}>
-        <View style={styles.profileImageContainer}>
+        <View style={[styles.profileImageContainer, { borderColor: getColor('primary') }]}>
           <Image
             source={{ uri: avatar_url }}
             style={styles.profileImage}
           />
         </View>
-        <Text style={styles.profileName}>{full_name}</Text>
-        <Text style={styles.profileEmail}>{email}</Text>
-        <TouchableOpacity style={styles.editProfileButton}>
-          <Text style={styles.editProfileText}>Edit Profile</Text>
+        <Text style={[styles.profileName, { color: getColor('text.primary') }]}>{full_name}</Text>
+        <Text style={[styles.profileEmail, { color: getColor('text.secondary') }]}>{email}</Text>
+        <TouchableOpacity style={[styles.editProfileButton, { backgroundColor: getColor('button.primary') }]}>
+          <Text style={[styles.editProfileText, { color: getColor('primary') }]}>Edit Profile</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.statsRow}>
+      <View style={[styles.statsRow, { backgroundColor: getColor('card') }]}>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{total_goals}</Text>
-          <Text style={styles.statLabel}>Total Goals</Text>
+          <Text style={[styles.statValue, { color: getColor('text.primary') }]}>{total_goals}</Text>
+          <Text style={[styles.statLabel, { color: getColor('text.secondary') }]}>Total Goals</Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: getColor('border') }]} />
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{completed_goals}</Text>
-          <Text style={styles.statLabel}>Completed</Text>
+          <Text style={[styles.statValue, { color: getColor('text.primary') }]}>{completed_goals}</Text>
+          <Text style={[styles.statLabel, { color: getColor('text.secondary') }]}>Completed</Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: getColor('border') }]} />
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{successRate}</Text>
-          <Text style={styles.statLabel}>Success Rate</Text>
+          <Text style={[styles.statValue, { color: getColor('text.primary') }]}>{successRate}</Text>
+          <Text style={[styles.statLabel, { color: getColor('text.secondary') }]}>Success Rate</Text>
         </View>
       </View>
 
       <View style={styles.sectionTitle}>
-        <Award size={20} color="#3B82F6" />
-        <Text style={styles.sectionTitleText}>Achievements</Text>
+        <Award size={20} color={getColor('primary')} />
+        <Text style={[styles.sectionTitleText, { color: getColor('text.primary') }]}>Achievements</Text>
       </View>
 
       <ScrollView
@@ -73,74 +75,75 @@ export default function ProfileScreen() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.achievementsContainer}
       >
-        <View style={styles.achievementCard}>
-          <View style={[styles.achievementIcon, { backgroundColor: '#EFF6FF' }]}>
-            <Award size={24} color="#3B82F6" />
+        <View style={[styles.achievementCard, { backgroundColor: getColor('card') }]}>
+          <View style={[styles.achievementIcon, { backgroundColor: getColor('button.primary') }]}>
+            <Award size={24} color={getColor('primary')} />
           </View>
-          <Text style={styles.achievementTitle}>First Goal</Text>
-          <Text style={styles.achievementDesc}>Created your first goal</Text>
+          <Text style={[styles.achievementTitle, { color: getColor('text.primary') }]}>First Goal</Text>
+          <Text style={[styles.achievementDesc, { color: getColor('text.secondary') }]}>Created your first goal</Text>
         </View>
-        <View style={styles.achievementCard}>
-          <View style={[styles.achievementIcon, { backgroundColor: '#F0FDF4' }]}>
-            <Award size={24} color="#10B981" />
+        <View style={[styles.achievementCard, { backgroundColor: getColor('card') }]}>
+          <View style={[styles.achievementIcon, { backgroundColor: getColor('status.success') }]}>
+            <Award size={24} color={getColor('status.success')} />
           </View>
-          <Text style={styles.achievementTitle}>Milestone Master</Text>
-          <Text style={styles.achievementDesc}>Completed 10 milestones</Text>
+          <Text style={[styles.achievementTitle, { color: getColor('text.primary') }]}>Milestone Master</Text>
+          <Text style={[styles.achievementDesc, { color: getColor('text.secondary') }]}>Completed 10 milestones</Text>
         </View>
-        <View style={[styles.achievementCard, styles.lockedAchievement]}>
-          <View style={[styles.achievementIcon, { backgroundColor: '#F1F5F9' }]}>
-            <Award size={24} color="#94A3B8" />
+        <View style={[styles.achievementCard, styles.lockedAchievement, { backgroundColor: getColor('card') }]}>
+          <View style={[styles.achievementIcon, { backgroundColor: getColor('button.primary') }]}>
+            <Award size={24} color={getColor('icon.primary')} />
           </View>
-          <Text style={[styles.achievementTitle, { color: '#94A3B8' }]}>Goal Crusher</Text>
-          <Text style={[styles.achievementDesc, { color: '#94A3B8' }]}>Complete 5 goals</Text>
+          <Text style={[styles.achievementTitle, { color: getColor('icon.primary') }]}>Goal Crusher</Text>
+          <Text style={[styles.achievementDesc, { color: getColor('icon.primary') }]}>Complete 5 goals</Text>
         </View>
       </ScrollView>
 
       <View style={styles.settingsContainer}>
         <View style={styles.sectionTitle}>
-          <Settings size={20} color="#3B82F6" />
-          <Text style={styles.sectionTitleText}>Settings</Text>
+          <Settings size={20} color={getColor('primary')} />
+          <Text style={[styles.sectionTitleText, { color: getColor('text.primary') }]}>Settings</Text>
         </View>
 
-        <View style={styles.settingsGroup}>
-          <View style={styles.settingItem}>
-            <Bell size={20} color="#64748B" />
-            <Text style={styles.settingLabel}>Notifications</Text>
+        <View style={[styles.settingsGroup, { backgroundColor: getColor('card') }]}>
+          <View style={[styles.settingItem, { borderBottomColor: getColor('border') }]}>
+            <Bell size={20} color={getColor('icon.primary')} />
+            <Text style={[styles.settingLabel, { color: getColor('text.primary') }]}>Notifications</Text>
             <Switch
               value={true}
-              trackColor={{ false: '#E2E8F0', true: '#BFDBFE' }}
-              thumbColor={true ? '#3B82F6' : '#F9FAFB'}
+              trackColor={{ false: getColor('border'), true: getColor('button.primary') }}
+              thumbColor={true ? getColor('primary') : getColor('card')}
             />
           </View>
 
-          <View style={styles.settingItem}>
-            <Moon size={20} color="#64748B" />
-            <Text style={styles.settingLabel}>Dark Mode</Text>
+          <View style={[styles.settingItem, { borderBottomColor: getColor('border') }]}>
+            <Moon size={20} color={getColor('icon.primary')} />
+            <Text style={[styles.settingLabel, { color: getColor('text.primary') }]}>Dark Mode</Text>
             <Switch
-              value={false}
-              trackColor={{ false: '#E2E8F0', true: '#BFDBFE' }}
-              thumbColor={false ? '#3B82F6' : '#F9FAFB'}
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: getColor('border'), true: getColor('button.primary') }}
+              thumbColor={isDark ? getColor('primary') : getColor('card')}
             />
           </View>
         </View>
 
-        <View style={styles.settingsGroup}>
-          <TouchableOpacity style={styles.settingItemButton}>
-            <Shield size={20} color="#64748B" />
-            <Text style={styles.settingLabel}>Privacy Policy</Text>
-            <ChevronRight size={20} color="#94A3B8" />
+        <View style={[styles.settingsGroup, { backgroundColor: getColor('card') }]}>
+          <TouchableOpacity style={[styles.settingItemButton, { borderBottomColor: getColor('border') }]}>
+            <Shield size={20} color={getColor('icon.primary')} />
+            <Text style={[styles.settingLabel, { color: getColor('text.primary') }]}>Privacy Policy</Text>
+            <ChevronRight size={20} color={getColor('icon.primary')} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingItemButton}>
-            <HelpCircle size={20} color="#64748B" />
-            <Text style={styles.settingLabel}>Help & Support</Text>
-            <ChevronRight size={20} color="#94A3B8" />
+          <TouchableOpacity style={[styles.settingItemButton, { borderBottomColor: getColor('border') }]}>
+            <HelpCircle size={20} color={getColor('icon.primary')} />
+            <Text style={[styles.settingLabel, { color: getColor('text.primary') }]}>Help & Support</Text>
+            <ChevronRight size={20} color={getColor('icon.primary')} />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <LogOut size={20} color="#F43F5E" />
-          <Text style={styles.logoutText}>Log Out</Text>
+        <TouchableOpacity onPress={handleLogout} style={[styles.logoutButton, { backgroundColor: getColor('button.danger') }]}>
+          <LogOut size={20} color={getColor('status.error')} />
+          <Text style={[styles.logoutText, { color: getColor('status.error') }]}>Log Out</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -150,7 +153,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   contentContainer: {
     padding: 16,
@@ -166,7 +168,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 16,
     borderWidth: 3,
-    borderColor: '#3B82F6',
   },
   profileImage: {
     width: '100%',
@@ -175,17 +176,14 @@ const styles = StyleSheet.create({
   profileName: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    color: '#1E293B',
     marginBottom: 4,
   },
   profileEmail: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#64748B',
     marginBottom: 16,
   },
   editProfileButton: {
-    backgroundColor: '#EFF6FF',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 100,
@@ -193,11 +191,9 @@ const styles = StyleSheet.create({
   editProfileText: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
-    color: '#3B82F6',
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -214,18 +210,15 @@ const styles = StyleSheet.create({
   statValue: {
     fontFamily: 'Inter-Bold',
     fontSize: 20,
-    color: '#1E293B',
     marginBottom: 4,
   },
   statLabel: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
   },
   statDivider: {
     width: 1,
     height: '80%',
-    backgroundColor: '#E2E8F0',
     alignSelf: 'center',
   },
   sectionTitle: {
@@ -236,14 +229,12 @@ const styles = StyleSheet.create({
   sectionTitleText: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 18,
-    color: '#1E293B',
     marginLeft: 8,
   },
   achievementsContainer: {
     paddingBottom: 8,
   },
   achievementCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     width: 150,
@@ -269,21 +260,18 @@ const styles = StyleSheet.create({
   achievementTitle: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 14,
-    color: '#1E293B',
     marginBottom: 4,
     textAlign: 'center',
   },
   achievementDesc: {
     fontFamily: 'Inter-Regular',
     fontSize: 12,
-    color: '#64748B',
     textAlign: 'center',
   },
   settingsContainer: {
     marginTop: 24,
   },
   settingsGroup: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     marginBottom: 16,
     shadowColor: '#000',
@@ -297,19 +285,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
   },
   settingItemButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
   },
   settingLabel: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,
-    color: '#1E293B',
     flex: 1,
     marginLeft: 12,
   },
@@ -317,7 +302,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FEE2E2',
     padding: 16,
     borderRadius: 12,
     marginTop: 8,
@@ -326,7 +310,6 @@ const styles = StyleSheet.create({
   logoutText: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,
-    color: '#F43F5E',
     marginLeft: 8,
   },
 });
