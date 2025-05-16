@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-
 import Svg, { Circle, G } from 'react-native-svg';
-
+import { useTheme } from '@/context/ThemeContext';
 
 interface ProgressCircleProps {
   progress: number;
@@ -19,14 +18,13 @@ export default function AnimatedProgressCircle({
   size = 100,
   strokeWidth = 10,
   color = '#3B82F6',
-  backgroundColor = '#E2E8F0',
+  backgroundColor,
   showPercentage = true,
-  textColor = '#1E293B',
+  textColor,
 }: ProgressCircleProps) {
+  const { getColor } = useTheme();
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-
-
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
@@ -36,7 +34,7 @@ export default function AnimatedProgressCircle({
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke={backgroundColor}
+            stroke={backgroundColor || getColor('border')}
             strokeWidth={strokeWidth}
             fill="transparent"
           />
@@ -54,7 +52,7 @@ export default function AnimatedProgressCircle({
       </Svg>
       {showPercentage && (
         <View style={styles.textContainer}>
-          <Text style={[styles.percentageText, { color: textColor }]}>
+          <Text style={[styles.percentageText, { color: textColor || getColor('text.primary') }]}>
             {Math.round(progress)}%
           </Text>
         </View>

@@ -7,10 +7,12 @@ import MilestoneItem from '@/components/MilestoneItem';
 import { Calendar, Plus, Target } from 'lucide-react-native';
 import { format } from 'date-fns';
 import { Milestone } from '@/types/goal';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function GoalDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { goals, toggleMilestoneCompleted, addMilestone, deleteMilestone, updateGoal } = useGoals();
+  const { getColor } = useTheme();
   const goal = goals.find(g => g.id === id);
 
   const [newMilestone, setNewMilestone] = useState('');
@@ -21,8 +23,8 @@ export default function GoalDetailsScreen() {
   console.log("gpal", goal);
   if (!goal) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Goal not found</Text>
+      <View style={[styles.container, { backgroundColor: getColor('background') }]}>
+        <Text style={[styles.errorText, { color: getColor('text.primary') }]}>Goal not found</Text>
       </View>
     );
   }
@@ -58,8 +60,8 @@ export default function GoalDetailsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView style={[styles.container, { backgroundColor: getColor('background') }]}>
+      <View style={[styles.header, { backgroundColor: getColor('card'), borderBottomColor: getColor('border') }]}>
         <View style={[styles.categoryBadge, { backgroundColor: goal.color }]}>
           <Text style={styles.categoryText}>
             {goal.category.charAt(0).toUpperCase() + goal.category.slice(1)}
@@ -69,21 +71,31 @@ export default function GoalDetailsScreen() {
         {isEditing ? (
           <View style={styles.editContainer}>
             <TextInput
-              style={styles.editInput}
+              style={[styles.editInput, { 
+                color: getColor('text.primary'),
+                borderColor: getColor('border'),
+                backgroundColor: getColor('background')
+              }]}
               value={editedTitle}
               onChangeText={setEditedTitle}
               placeholder="Goal title"
+              placeholderTextColor={getColor('text.secondary')}
             />
             <TextInput
-              style={[styles.editInput, styles.editTextArea]}
+              style={[styles.editInput, styles.editTextArea, { 
+                color: getColor('text.primary'),
+                borderColor: getColor('border'),
+                backgroundColor: getColor('background')
+              }]}
               value={editedDescription}
               onChangeText={setEditedDescription}
               placeholder="Goal description"
+              placeholderTextColor={getColor('text.secondary')}
               multiline
               numberOfLines={4}
             />
             <TouchableOpacity
-              style={styles.saveButton}
+              style={[styles.saveButton, { backgroundColor: getColor('primary') }]}
               onPress={handleSaveEdits}
             >
               <Text style={styles.saveButtonText}>Save Changes</Text>
@@ -91,19 +103,22 @@ export default function GoalDetailsScreen() {
           </View>
         ) : (
           <>
-            <Text style={styles.title}>{goal.title}</Text>
-            <Text style={styles.description}>{goal.description}</Text>
+            <Text style={[styles.title, { color: getColor('text.primary') }]}>{goal.title}</Text>
+            <Text style={[styles.description, { color: getColor('text.secondary') }]}>{goal.description}</Text>
             <TouchableOpacity
               style={styles.editButton}
               onPress={() => setIsEditing(true)}
             >
-              <Text style={styles.editButtonText}>Edit Goal</Text>
+              <Text style={[styles.editButtonText, { color: getColor('primary') }]}>Edit Goal</Text>
             </TouchableOpacity>
           </>
         )}
       </View>
 
-      <View style={styles.progressSection}>
+      <View style={[styles.progressSection, { 
+        backgroundColor: getColor('card'),
+        borderBottomColor: getColor('border')
+      }]}>
         <ProgressCircle
           progress={goal.progress}
           size={120}
@@ -111,10 +126,10 @@ export default function GoalDetailsScreen() {
           color={goal.color}
         />
         <View style={styles.progressInfo}>
-          <Text style={styles.progressText}>{goal.progress}% Complete</Text>
+          <Text style={[styles.progressText, { color: getColor('text.primary') }]}>{goal.progress}% Complete</Text>
           <View style={styles.dateInfo}>
-            <Calendar size={16} color="#64748B" />
-            <Text style={styles.dateText}>
+            <Calendar size={16} color={getColor('text.secondary')} />
+            <Text style={[styles.dateText, { color: getColor('text.secondary') }]}>
               Target: {format(new Date(goal.target), 'MMM d, yyyy')}
             </Text>
           </View>
@@ -125,19 +140,23 @@ export default function GoalDetailsScreen() {
       </View>
 
       <View style={styles.milestonesSection}>
-        <Text style={styles.sectionTitle}>Milestones</Text>
+        <Text style={[styles.sectionTitle, { color: getColor('text.primary') }]}>Milestones</Text>
 
         <View style={styles.addMilestoneContainer}>
           <TextInput
-            style={styles.milestoneInput}
+            style={[styles.milestoneInput, { 
+              color: getColor('text.primary'),
+              borderColor: getColor('border'),
+              backgroundColor: getColor('background')
+            }]}
             value={newMilestone}
             onChangeText={setNewMilestone}
             placeholder="Add a new milestone"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={getColor('text.secondary')}
             onSubmitEditing={handleAddMilestone}
           />
           <TouchableOpacity
-            style={styles.addButton}
+            style={[styles.addButton, { backgroundColor: getColor('primary') }]}
             onPress={handleAddMilestone}
           >
             <Plus size={20} color="#FFFFFF" />
@@ -156,8 +175,8 @@ export default function GoalDetailsScreen() {
           ))}
           {goal.milestones.length === 0 && (
             <View style={styles.emptyState}>
-              <Target size={40} color="#94A3B8" />
-              <Text style={styles.emptyStateText}>
+              <Target size={40} color={getColor('text.secondary')} />
+              <Text style={[styles.emptyStateText, { color: getColor('text.secondary') }]}>
                 No milestones yet. Break down your goal into smaller, achievable steps.
               </Text>
             </View>
@@ -171,13 +190,10 @@ export default function GoalDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   header: {
     padding: 16,
-    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
   },
   categoryBadge: {
     alignSelf: 'flex-start',
@@ -194,13 +210,11 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    color: '#1E293B',
     marginBottom: 8,
   },
   description: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#64748B',
     lineHeight: 24,
   },
   editButton: {
@@ -210,7 +224,6 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
-    color: '#3B82F6',
   },
   editContainer: {
     gap: 12,
@@ -218,9 +231,7 @@ const styles = StyleSheet.create({
   editInput: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#1E293B',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     borderRadius: 8,
     padding: 12,
   },
@@ -229,7 +240,6 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   saveButton: {
-    backgroundColor: '#3B82F6',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -242,92 +252,76 @@ const styles = StyleSheet.create({
   progressSection: {
     flexDirection: 'row',
     padding: 16,
-    backgroundColor: '#FFFFFF',
     marginTop: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
   },
   progressInfo: {
-    flex: 1,
     marginLeft: 16,
     justifyContent: 'center',
   },
   progressText: {
     fontFamily: 'Inter-Bold',
-    fontSize: 18,
-    color: '#1E293B',
+    fontSize: 20,
     marginBottom: 8,
   },
   dateInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    gap: 8,
+    marginBottom: 4,
   },
   dateText: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
-    marginLeft: 8,
   },
   remainingText: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
   },
   milestonesSection: {
     padding: 16,
-    backgroundColor: '#FFFFFF',
-    marginTop: 8,
-    flex: 1,
   },
   sectionTitle: {
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Inter-Bold',
     fontSize: 18,
-    color: '#1E293B',
     marginBottom: 16,
   },
   addMilestoneContainer: {
     flexDirection: 'row',
-    marginBottom: 16,
     gap: 8,
+    marginBottom: 16,
   },
   milestoneInput: {
     flex: 1,
-    height: 44,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    paddingHorizontal: 16,
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#1E293B',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
   },
   addButton: {
     width: 44,
     height: 44,
-    backgroundColor: '#3B82F6',
     borderRadius: 8,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   milestonesList: {
-    backgroundColor: '#FFFFFF',
+    gap: 12,
   },
   emptyState: {
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 8,
+    gap: 12,
   },
   emptyStateText: {
     fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    color: '#64748B',
+    fontSize: 16,
     textAlign: 'center',
-    marginTop: 12,
   },
   errorText: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,
-    color: '#EF4444',
     textAlign: 'center',
     marginTop: 24,
   },
