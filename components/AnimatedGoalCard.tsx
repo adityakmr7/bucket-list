@@ -4,13 +4,7 @@ import { format } from 'date-fns';
 import { Goal } from '@/types/goal';
 import { Settings2, ChevronRight, Calendar } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import Animated, {
-  FadeInRight,
-  FadeOutLeft,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+
 import AnimatedProgressCircle from './AnimatedProgressCircle';
 import { daysRemaining, formDateTime } from '@/utils';
 
@@ -22,20 +16,13 @@ interface GoalCardProps {
 
 export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps) {
   const router = useRouter();
-  const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
+
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.98);
   };
 
   const handlePressOut = () => {
-    scale.value = withSpring(1);
   };
 
 
@@ -53,10 +40,8 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
 
   const dayRemaing = daysRemaining(goal);
   return (
-    <Animated.View
-      entering={FadeInRight.delay(index * 100)}
-      exiting={FadeOutLeft}
-      style={[styles.cardContainer, animatedStyle]}
+    <View
+      style={[styles.cardContainer]}
     >
       <TouchableOpacity
         onPress={handlePress}
@@ -134,7 +119,7 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
           </View>
         </View>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 }
 

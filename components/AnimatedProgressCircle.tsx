@@ -1,16 +1,8 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withSpring,
-  withTiming,
-  Easing,
-  interpolate,
-} from 'react-native-reanimated';
+
 import Svg, { Circle, G } from 'react-native-svg';
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 interface ProgressCircleProps {
   progress: number;
@@ -33,31 +25,8 @@ export default function AnimatedProgressCircle({
 }: ProgressCircleProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const animatedProgress = useSharedValue(0);
-  const rotation = useSharedValue(0);
 
-  useEffect(() => {
-    animatedProgress.value = withSpring(progress, {
-      damping: 15,
-      stiffness: 90,
-    });
-    rotation.value = withTiming(360, {
-      duration: 1000,
-      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-    });
-  }, [progress]);
 
-  const animatedProps = useAnimatedProps(() => {
-    const strokeDashoffset = interpolate(
-      animatedProgress.value,
-      [0, 100],
-      [circumference, 0]
-    );
-    return {
-      strokeDashoffset,
-      transform: [{ rotate: `${rotation.value}deg` }],
-    };
-  });
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
@@ -71,7 +40,7 @@ export default function AnimatedProgressCircle({
             strokeWidth={strokeWidth}
             fill="transparent"
           />
-          <AnimatedCircle
+          <Circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
@@ -80,16 +49,15 @@ export default function AnimatedProgressCircle({
             fill="transparent"
             strokeLinecap="round"
             strokeDasharray={circumference}
-            animatedProps={animatedProps}
           />
         </G>
       </Svg>
       {showPercentage && (
-        <Animated.View style={styles.textContainer}>
+        <View style={styles.textContainer}>
           <Text style={[styles.percentageText, { color: textColor }]}>
             {Math.round(progress)}%
           </Text>
-        </Animated.View>
+        </View>
       )}
     </View>
   );

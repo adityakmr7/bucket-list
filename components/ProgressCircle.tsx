@@ -1,14 +1,8 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
+
 import Svg, { Circle } from 'react-native-svg';
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 interface ProgressCircleProps {
   progress: number;
@@ -31,21 +25,6 @@ export default function ProgressCircle({
 }: ProgressCircleProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const animatedProgress = useSharedValue(0);
-
-  useEffect(() => {
-    animatedProgress.value = withTiming(progress, {
-      duration: 1000,
-      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-    });
-  }, [progress]);
-
-  const animatedProps = useAnimatedProps(() => {
-    const strokeDashoffset = circumference - (circumference * animatedProgress.value) / 100;
-    return {
-      strokeDashoffset,
-    };
-  });
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
@@ -60,7 +39,7 @@ export default function ProgressCircle({
           fill="transparent"
         />
         {/* Progress Circle */}
-        <AnimatedCircle
+        <Circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
@@ -69,7 +48,6 @@ export default function ProgressCircle({
           fill="transparent"
           strokeLinecap="round"
           strokeDasharray={circumference}
-          animatedProps={animatedProps}
           rotation="-90"
           origin={`${size / 2}, ${size / 2}`}
         />

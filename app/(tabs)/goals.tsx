@@ -5,12 +5,7 @@ import AnimatedGoalCard from '@/components/AnimatedGoalCard';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react-native';
 import CategoryPicker from '@/components/CategoryPicker';
 import { GoalCategory } from '@/types/goal';
-import Animated, { 
-  FadeIn,
-  FadeOut,
-  SlideInRight,
-  SlideOutLeft,
-} from 'react-native-reanimated';
+
 
 export default function GoalsScreen() {
   const { goals } = useGoals();
@@ -20,8 +15,8 @@ export default function GoalsScreen() {
 
   // Filter goals based on search and category
   const filteredGoals = goals.filter(goal => {
-    const matchesSearch = goal.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          goal.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = goal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      goal.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory ? goal.category === selectedCategory : true;
     return matchesSearch && matchesCategory;
   });
@@ -37,8 +32,7 @@ export default function GoalsScreen() {
 
   return (
     <View style={styles.container}>
-      <Animated.View 
-        entering={SlideInRight.duration(500)}
+      <View
         style={styles.searchContainer}
       >
         <View style={styles.searchInputContainer}>
@@ -54,10 +48,9 @@ export default function GoalsScreen() {
         <TouchableOpacity style={styles.filterButton}>
           <SlidersHorizontal size={20} color="#3B82F6" />
         </TouchableOpacity>
-      </Animated.View>
+      </View>
 
-      <Animated.View 
-        entering={SlideInRight.delay(100).duration(500)}
+      <View
         style={styles.filterContainer}
       >
         <CategoryPicker
@@ -70,10 +63,9 @@ export default function GoalsScreen() {
             }
           }}
         />
-      </Animated.View>
+      </View>
 
-      <Animated.View 
-        entering={SlideInRight.delay(200).duration(500)}
+      <View
         style={styles.sortContainer}
       >
         <Text style={styles.sortLabel}>Sort by:</Text>
@@ -109,7 +101,7 @@ export default function GoalsScreen() {
             Progress
           </Text>
         </TouchableOpacity>
-      </Animated.View>
+      </View>
 
       <ScrollView
         style={styles.goalsContainer}
@@ -121,9 +113,7 @@ export default function GoalsScreen() {
             <AnimatedGoalCard key={goal.id} goal={goal} index={index} />
           ))
         ) : (
-          <Animated.View 
-            entering={FadeIn}
-            exiting={FadeOut}
+          <View
             style={styles.emptyContainer}
           >
             <Text style={styles.emptyTitle}>No goals found</Text>
@@ -132,7 +122,7 @@ export default function GoalsScreen() {
                 ? "Try adjusting your filters or search terms"
                 : "Create a new goal by tapping the '+' tab"}
             </Text>
-          </Animated.View>
+          </View>
         )}
       </ScrollView>
     </View>

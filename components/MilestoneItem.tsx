@@ -29,7 +29,7 @@ export default function MilestoneItem({
           <Circle size={24} color="#94A3B8" />
         )}
       </TouchableOpacity>
-      
+
       <View style={styles.contentContainer}>
         <Text
           style={[
@@ -39,7 +39,7 @@ export default function MilestoneItem({
         >
           {milestone.title}
         </Text>
-        
+
         {milestone.description && (
           <Text
             style={[
@@ -52,7 +52,7 @@ export default function MilestoneItem({
           </Text>
         )}
       </View>
-      
+
       <TouchableOpacity
         style={styles.deleteButton}
         onPress={onDelete}
