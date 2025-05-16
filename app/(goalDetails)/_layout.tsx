@@ -7,7 +7,7 @@ export default function GoalDetailsLayout() {
         name="[id]"
         options={{
           headerShown: true,
-          headerTitle: 'Goal Details',
+          headerTitle: 'Goal',
           headerBackTitle: 'Back',
         }}
       />
