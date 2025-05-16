@@ -1,12 +1,48 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ActivityIndicator, View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch } from 'react-native';
 import { Bell, ChevronRight, Shield, CircleHelp as HelpCircle, LogOut, Award, Settings, Moon } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthProvider';
-
+import { supabase } from '@/utils/supabase';
 export default function ProfileScreen() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      console.log('userId', user?.id);
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url, email')
+        .eq('id', user?.id)
+        .maybeSingle();
+
+      console.log("dddd", data)
+      if (error) {
+        console.error('Error fetching profile:', error);
+      } else {
+        console.log("data", data)
+        setProfile(data);
+      }
+      setLoading(false);
+    };
+
+    if (user?.id) {
+      fetchProfile();
+    }
+  }, [user]);
   const handleLogout = async () => {
     await logout();
+  }
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+      </View>
+    );
   }
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -17,8 +53,8 @@ export default function ProfileScreen() {
             style={styles.profileImage}
           />
         </View>
-        <Text style={styles.profileName}>Alex Johnson</Text>
-        <Text style={styles.profileEmail}>alex.johnson@example.com</Text>
+        <Text style={styles.profileName}>{profile?.full_name || ''}</Text>
+        <Text style={styles.profileEmail}>{profile?.email}</Text>
         <TouchableOpacity style={styles.editProfileButton}>
           <Text style={styles.editProfileText}>Edit Profile</Text>
         </TouchableOpacity>

@@ -95,20 +95,22 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
 
     const register = async (email: string, password: string, name: string): Promise<AuthResult> => {
         try {
-            const { data: { session },
+            const { data,
                 error, } = await supabase.auth.signUp({
                     email,
                     password,
+                    options: {
+                        data: {
+                            full_name: name,
+                        }
+                    }
                 })
 
-            // Update profile to add display name
-            // await updateProfile(us.user, {
-            //     displayName: name
-            // });
-
-
+            if (data?.user) {
+                await supabase.from('profiles').update({ full_name: name }).eq('id', data.user.id);
+            }
             if (error) Alert.alert(error.message)
-            if (!session) Alert.alert('Please check your inbox for email verification!')
+            if (!data.session) Alert.alert('Please check your inbox for email verification!')
             setLoading(false)
             router.replace('/');
             return { success: true };
