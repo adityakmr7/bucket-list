@@ -124,6 +124,7 @@ export default function GoalDetailsScreen() {
           size={120}
           strokeWidth={12}
           color={goal.color}
+          backgroundColor={getColor('border')}
         />
         <View style={styles.progressInfo}>
           <Text style={[styles.progressText, { color: getColor('text.primary') }]}>{goal.progress}% Complete</Text>
@@ -139,7 +140,7 @@ export default function GoalDetailsScreen() {
         </View>
       </View>
 
-      <View style={styles.milestonesSection}>
+      <View style={[styles.milestonesSection, { backgroundColor: getColor('card') }]}>
         <Text style={[styles.sectionTitle, { color: getColor('text.primary') }]}>Milestones</Text>
 
         <View style={styles.addMilestoneContainer}>
@@ -280,6 +281,8 @@ const styles = StyleSheet.create({
   },
   milestonesSection: {
     padding: 16,
+    marginTop: 8,
+    borderRadius: 12,
   },
   sectionTitle: {
     fontFamily: 'Inter-Bold',
