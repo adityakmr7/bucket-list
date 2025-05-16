@@ -1,24 +1,46 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ActivityIndicator, View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch } from 'react-native';
 import { Bell, ChevronRight, Shield, CircleHelp as HelpCircle, LogOut, Award, Settings, Moon } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthProvider';
+import useProfile from '@/hooks/useProfile';
 
 export default function ProfileScreen() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const { loading, profile, achievements } = useProfile();
+
   const handleLogout = async () => {
     await logout();
   }
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+      </View>
+    );
+  }
+
+  const full_name = profile?.full_name || '';
+  const email = profile?.email || '';
+  const avatar_url = profile?.avatar_url || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600';
+  const total_goals = profile?.total_goals || 0;
+  const completed_goals = profile?.completed_goals || 0;
+
+  const successRate = total_goals > 0
+    ? Math.round((completed_goals / total_goals) * 100)
+    : 0;
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.profileHeader}>
         <View style={styles.profileImageContainer}>
           <Image
-            source={{ uri: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600' }}
+            source={{ uri: avatar_url }}
             style={styles.profileImage}
           />
         </View>
-        <Text style={styles.profileName}>Alex Johnson</Text>
-        <Text style={styles.profileEmail}>alex.johnson@example.com</Text>
+        <Text style={styles.profileName}>{full_name}</Text>
+        <Text style={styles.profileEmail}>{email}</Text>
         <TouchableOpacity style={styles.editProfileButton}>
           <Text style={styles.editProfileText}>Edit Profile</Text>
         </TouchableOpacity>
@@ -26,17 +48,17 @@ export default function ProfileScreen() {
 
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>8</Text>
+          <Text style={styles.statValue}>{total_goals}</Text>
           <Text style={styles.statLabel}>Total Goals</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>3</Text>
+          <Text style={styles.statValue}>{completed_goals}</Text>
           <Text style={styles.statLabel}>Completed</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>65%</Text>
+          <Text style={styles.statValue}>{successRate}</Text>
           <Text style={styles.statLabel}>Success Rate</Text>
         </View>
       </View>

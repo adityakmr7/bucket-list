@@ -12,12 +12,13 @@ export default function GoalDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { goals, toggleMilestoneCompleted, addMilestone, deleteMilestone, updateGoal } = useGoals();
   const goal = goals.find(g => g.id === id);
-  
+
   const [newMilestone, setNewMilestone] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(goal?.title || '');
   const [editedDescription, setEditedDescription] = useState(goal?.description || '');
 
+  console.log("gpal", goal);
   if (!goal) {
     return (
       <View style={styles.container}>
@@ -125,7 +126,7 @@ export default function GoalDetailsScreen() {
 
       <View style={styles.milestonesSection}>
         <Text style={styles.sectionTitle}>Milestones</Text>
-        
+
         <View style={styles.addMilestoneContainer}>
           <TextInput
             style={styles.milestoneInput}

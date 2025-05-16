@@ -1,7 +1,7 @@
+// contexts/GoalProvider.tsx
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Goal, Milestone } from '@/types/goal';
-import { ref, set, onValue, remove, Database, get } from 'firebase/database';
-import { auth, db } from '@/config/firebase';
+import { supabase } from '@/utils/supabase';
 import { useAuth } from './AuthProvider';
 
 interface GoalContextType {
@@ -37,147 +37,182 @@ export const GoalProvider = ({ children }: GoalProviderProps) => {
       return;
     }
 
-    const goalsRef = ref(db, `users/${user.uid}/goals`);
-    console.log("Setting up goals listener for user:", user.uid);
+    const fetchGoals = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('goals')
+        .select('*, milestones(*)')
+        .eq('user_id', user.id);
 
-    // Listen for real-time updates
-    const unsubscribe = onValue(goalsRef, (snapshot) => {
-      try {
-        const data = snapshot.val();
-        console.log("Firebase data received:", data);
+      if (error) {
+        console.error('Supabase error:', error);
+        setError('Failed to load goals');
+      } else {
 
-        if (data) {
-          // Convert the object to an array and parse dates
-          const goalsArray = Object.entries(data).map(([id, goal]: [string, any]) => ({
-            ...goal,
-            id,
-            target: new Date(goal.target),
-            createdAt: new Date(goal.createdAt),
-            milestones: goal.milestones || []
-          })) as Goal[];
-
-          console.log("Processed goals array:", goalsArray);
-          setGoals(goalsArray);
-        } else {
-          console.log("No goals data found");
-          setGoals([]);
-        }
+        const goalsData = data.map((goal) => ({
+          ...goal,
+          target: new Date(goal.target),
+          created_at: new Date(goal.created_at),
+          milestones: goal.milestones || [],
+        }));
+        setGoals(goalsData);
         setError(null);
-      } catch (err) {
-        console.error("Error processing goals data:", err);
-        setError("Failed to load goals");
-      } finally {
-        setLoading(false);
       }
-    }, (error) => {
-      console.error("Firebase error:", error);
-      setError("Failed to connect to database");
       setLoading(false);
-    });
-
-    return () => {
-      console.log("Cleaning up goals listener");
-      unsubscribe();
     };
+
+    fetchGoals();
   }, [user]);
 
   const addGoal = async (goal: Goal) => {
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("User not authenticated");
+      if (!user) throw new Error('User not authenticated');
 
-      const goalRef = ref(db, `users/${user.uid}/goals/${goal.id}`);
-      await set(goalRef, {
-        ...goal,
+      const { error, data: goalData } = await supabase.from('goals').insert({
+        user_id: user.id,
+        title: goal.title,
         target: goal.target.toISOString(),
-        createdAt: goal.createdAt.toISOString()
-      });
+        created_at: goal.createdAt.toISOString(),
+        progress: goal.progress,
+        category: goal.category,
+        color: goal.color,
+      }).select().single();
+
+
+      if (goal.milestones && goal.milestones.length > 0) {
+        const milestonesWithGoalId = goal.milestones.map((m) => ({
+          goal_id: goalData.id,
+          title: m.title,
+          description: m.description,
+          completed: m.completed ?? false,
+        }));
+
+        const { error: milestoneError } = await supabase
+          .from('milestones')
+          .insert(milestonesWithGoalId);
+
+        if (milestoneError) throw milestoneError;
+      }
+
+      if (error) throw error;
     } catch (err) {
-      console.error("Error adding goal:", err);
+      console.error('Error adding goal:', err);
       throw err;
     }
   };
 
   const updateGoal = async (goalId: string, updatedGoal: Partial<Goal>) => {
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("User not authenticated");
+      if (!user) throw new Error('User not authenticated');
 
-      const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
-      const currentGoal = goals.find(g => g.id === goalId);
-      if (!currentGoal) throw new Error("Goal not found");
+      const { error } = await supabase
+        .from('goals')
+        .update({
+          ...updatedGoal,
+          target: updatedGoal.target?.toISOString(),
+        })
+        .eq('id', goalId)
+        .eq('user_id', user.id);
 
-      const updatedData = {
-        ...currentGoal,
-        ...updatedGoal,
-        target: updatedGoal.target ? updatedGoal.target.toISOString() : currentGoal.target.toISOString(),
-        createdAt: currentGoal.createdAt.toISOString()
-      };
-
-      await set(goalRef, updatedData);
+      if (error) throw error;
     } catch (err) {
-      console.error("Error updating goal:", err);
+      console.error('Error updating goal:', err);
       throw err;
     }
   };
 
   const deleteGoal = async (goalId: string) => {
-    const user = auth.currentUser;
-    if (!user) return;
+    try {
+      if (!user) throw new Error('User not authenticated');
 
-    const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
-    await remove(goalRef);
+      const { error } = await supabase
+        .from('goals')
+        .delete()
+        .eq('id', goalId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error deleting goal:', err);
+      throw err;
+    }
   };
 
   const toggleMilestoneCompleted = async (goalId: string, milestoneId: string) => {
-    const user = auth.currentUser;
-    if (!user) return;
+    try {
+      if (!user) throw new Error('User not authenticated');
 
-    const goal = goals.find(g => g.id === goalId);
-    if (!goal) return;
+      const goal = goals.find((g) => g.id === goalId);
+      if (!goal) throw new Error('Goal not found');
 
-    const updatedMilestones = goal.milestones.map((milestone) =>
-      milestone.id === milestoneId
-        ? { ...milestone, completed: !milestone.completed }
-        : milestone
-    );
+      const milestone = goal.milestones.find((m) => m.id === milestoneId);
+      if (!milestone) throw new Error('Milestone not found');
 
-    const completedCount = updatedMilestones.filter(m => m.completed).length;
-    const totalCount = updatedMilestones.length;
-    const newProgress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+      const updatedCompleted = !milestone.completed;
 
-    const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
-    await set(goalRef, {
-      ...goal,
-      milestones: updatedMilestones,
-      progress: newProgress
-    });
+      const { error } = await supabase
+        .from('milestones')
+        .update({ completed: updatedCompleted })
+        .eq('id', milestoneId);
+
+      if (error) throw error;
+
+      // Update progress
+      const updatedMilestones = goal.milestones.map((m) =>
+        m.id === milestoneId ? { ...m, completed: updatedCompleted } : m
+      );
+      const completedCount = updatedMilestones.filter((m) => m.completed).length;
+      const totalCount = updatedMilestones.length;
+      const newProgress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+      const { error: goalError } = await supabase
+        .from('goals')
+        .update({ progress: newProgress })
+        .eq('id', goalId);
+
+      if (goalError) throw goalError;
+    } catch (err) {
+      console.error('Error toggling milestone:', err);
+      throw err;
+    }
   };
 
   const addMilestone = async (goalId: string, milestone: Milestone) => {
-    const user = auth.currentUser;
-    if (!user) return;
+    try {
+      if (!user) throw new Error('User not authenticated');
+      console.log("addMilestone", {
+        goalId,
+        milestone
+      })
+      const { error } = await supabase.from('milestones').insert({
+        goal_id: goalId,
+        title: milestone.title,
+        description: milestone.description,
+        completed: milestone.completed,
+      });
 
-    const goal = goals.find(g => g.id === goalId);
-    if (!goal) return;
-
-    const updatedMilestones = [...goal.milestones, milestone];
-    const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
-    await set(goalRef, { ...goal, milestones: updatedMilestones });
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error adding milestone:', err);
+      throw err;
+    }
   };
 
   const deleteMilestone = async (goalId: string, milestoneId: string) => {
-    const user = auth.currentUser;
-    if (!user) return;
+    try {
+      if (!user) throw new Error('User not authenticated');
 
-    const goal = goals.find(g => g.id === goalId);
-    if (!goal) return;
+      const { error } = await supabase
+        .from('milestones')
+        .delete()
+        .eq('id', milestoneId)
+        .eq('goal_id', goalId);
 
-    const updatedMilestones = goal.milestones.filter(
-      (milestone) => milestone.id !== milestoneId
-    );
-    const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
-    await set(goalRef, { ...goal, milestones: updatedMilestones });
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error deleting milestone:', err);
+      throw err;
+    }
   };
 
   const updateMilestone = async (
@@ -185,19 +220,20 @@ export const GoalProvider = ({ children }: GoalProviderProps) => {
     milestoneId: string,
     updatedMilestone: Partial<Milestone>
   ) => {
-    const user = auth.currentUser;
-    if (!user) return;
+    try {
+      if (!user) throw new Error('User not authenticated');
 
-    const goal = goals.find(g => g.id === goalId);
-    if (!goal) return;
+      const { error } = await supabase
+        .from('milestones')
+        .update(updatedMilestone)
+        .eq('id', milestoneId)
+        .eq('goal_id', goalId);
 
-    const updatedMilestones = goal.milestones.map((milestone) =>
-      milestone.id === milestoneId
-        ? { ...milestone, ...updatedMilestone }
-        : milestone
-    );
-    const goalRef = ref(db, `users/${user.uid}/goals/${goalId}`);
-    await set(goalRef, { ...goal, milestones: updatedMilestones });
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error updating milestone:', err);
+      throw err;
+    }
   };
 
   const getGoalProgress = (goalId: string): number => {
@@ -207,7 +243,7 @@ export const GoalProvider = ({ children }: GoalProviderProps) => {
     const totalMilestones = goal.milestones.length;
     if (totalMilestones === 0) return 0;
 
-    const completedMilestones = goal.milestones.filter(m => m.completed).length;
+    const completedMilestones = goal.milestones.filter((m) => m.completed).length;
     return Math.round((completedMilestones / totalMilestones) * 100);
   };
 
@@ -235,7 +271,9 @@ export const GoalProvider = ({ children }: GoalProviderProps) => {
 export const useGoals = () => {
   const context = useContext(GoalContext);
   if (context === undefined) {
-    throw new Error('useGoals must be used within a GoalProvider');
+    throw new Error('useGoals must be used within ');
   }
   return context;
-};
+}
+
+

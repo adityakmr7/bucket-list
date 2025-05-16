@@ -30,14 +30,15 @@ export default function TabLayout() {
         },
         headerStyle: {
           height: Platform.OS === 'ios' ? 110 : 75,
-          shadowOpacity: 0.2,
+          shadowOpacity: 0,
           shadowOffset: { width: 0, height: 2 },
           shadowRadius: 4,
-          elevation: 3,
+          elevation: 0,
         },
         headerTitleStyle: {
           fontFamily: 'Inter-SemiBold',
           fontSize: 18,
+
         },
         headerTitleAlign: 'center',
       }}
