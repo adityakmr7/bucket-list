@@ -8,6 +8,8 @@ import { Platform } from 'react-native';
 import { GoalProvider } from '@/context/GoalContext';
 import { AuthProvider } from '@/context/AuthProvider';
 import { Provider } from 'react-redux'
+import "@/global.css";
+
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
