@@ -8,7 +8,9 @@ import { Platform } from 'react-native';
 import { GoalProvider } from '@/context/GoalContext';
 import { AuthProvider } from '@/context/AuthProvider';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import { NativeStackHeaderProps } from '@react-navigation/native-stack'
 import "@/global.css";
+import AppHeader from '@/components/AppHeader';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -40,7 +42,7 @@ function RootLayoutContent() {
     <AuthProvider>
       <GoalProvider>
         <StatusBar style={isDark ? 'light' : 'dark'} />
-        <Stack>
+        <Stack initialRouteName='(onboarding)'>
           <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

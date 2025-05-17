@@ -5,6 +5,8 @@ import { ChartBar as BarChart3, Chrome as Home, Plus, Target, User } from 'lucid
 import { useAuth } from '@/context/AuthProvider';
 import { Redirect } from 'expo-router';
 import { useTheme } from '@/context/ThemeContext';
+import { BottomTabHeaderProps } from '@react-navigation/bottom-tabs'
+import AppHeader from '@/components/AppHeader';
 
 export default function TabLayout() {
   const { user } = useAuth();
@@ -18,6 +20,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        header: (props: BottomTabHeaderProps) => <AppHeader name={user?.name || ''} headerProps={props} />,
         tabBarActiveTintColor: getColor('primary'),
         tabBarInactiveTintColor: getColor('text.secondary'),
         tabBarStyle: {
@@ -93,17 +96,7 @@ export default function TabLayout() {
           headerShown: true,
         }}
       />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <User color={color} size={size} />
-          ),
-          headerTitle: 'Profile',
-          headerShown: true,
-        }}
-      />
+
     </Tabs>
   );
 }
