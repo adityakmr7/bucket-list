@@ -41,6 +41,7 @@ function RootLayoutContent() {
       <GoalProvider>
         <StatusBar style={isDark ? 'light' : 'dark'} />
         <Stack>
+          <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(goalDetails)" options={{ headerShown: false }} />

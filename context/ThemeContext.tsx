@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
-import { ColorScheme, colors, getThemeColor, ColorPath } from '@/theme/colors';
+
+type ColorScheme = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: ColorScheme;
   toggleTheme: () => void;
   isDark: boolean;
-  colors: typeof colors;
-  getColor: (color: ColorPath) => string;
+  getColor: (color: string) => string;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -26,8 +26,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
-  const getColor = (color: ColorPath) => {
-    return getThemeColor(color, theme);
+  const getColor = (color: string) => {
+    const colorPath = color.split('.');
+    const themeColors = theme === 'light' ? require('@/tailwind.config').theme.extend.colors.light : require('@/tailwind.config').theme.extend.colors.dark;
+    
+    let current = themeColors;
+    for (const key of colorPath) {
+      if (current[key] === undefined) {
+        console.warn(`Color path "${color}" not found in ${theme} theme`);
+        return '#000000';
+      }
+      current = current[key];
+    }
+    
+    return current;
   };
 
   return (
@@ -36,7 +48,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         theme, 
         toggleTheme, 
         isDark: theme === 'dark',
-        colors,
         getColor,
       }}
     >
