@@ -60,7 +60,7 @@ export default function Dashboard() {
       {upcomingDeadline && (
         <View style={styles.deadlineContainer}>
           <Text style={[styles.sectionTitle, { color: getColor('text.primary') }]}>Next Deadline</Text>
-          <View style={[styles.deadlineCard, { backgroundColor: getColor('card') }]}>
+          <View className='mt-6' style={[styles.deadlineCard, { backgroundColor: getColor('card') }]}>
             <Text style={[styles.deadlineGoal, { color: getColor('text.primary') }]}>{upcomingDeadline.title}</Text>
             <Text style={[styles.deadlineDate, { color: getColor('status.error') }]}>
               {new Date(upcomingDeadline.target).toLocaleDateString('en-US', {
