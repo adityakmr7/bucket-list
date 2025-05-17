@@ -17,10 +17,12 @@ import { Calendar, Plus, Target } from 'lucide-react-native';
 import CategoryPicker from '@/components/CategoryPicker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function AddGoalScreen() {
   const { addGoal } = useGoals();
   const router = useRouter();
+  const { getColor } = useTheme();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -103,34 +105,42 @@ export default function AddGoalScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <ScrollView style={[styles.container, { backgroundColor: getColor('background') }]} contentContainerStyle={styles.contentContainer}>
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Goal Title</Text>
+          <Text style={[styles.label, { color: getColor('text.primary') }]}>Goal Title</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: getColor('card'),
+              borderColor: getColor('border'),
+              color: getColor('text.primary')
+            }]}
             value={title}
             onChangeText={setTitle}
             placeholder="Enter a clear, specific title"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={getColor('text.secondary')}
           />
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Description</Text>
+          <Text style={[styles.label, { color: getColor('text.primary') }]}>Description</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { 
+              backgroundColor: getColor('card'),
+              borderColor: getColor('border'),
+              color: getColor('text.primary')
+            }]}
             value={description}
             onChangeText={setDescription}
             multiline
             numberOfLines={4}
             placeholder="Why is this goal important to you?"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={getColor('text.secondary')}
             textAlignVertical="top"
           />
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Category</Text>
+          <Text style={[styles.label, { color: getColor('text.primary') }]}>Category</Text>
           <CategoryPicker
             selectedCategory={category}
             onSelectCategory={setCategory}
@@ -138,56 +148,66 @@ export default function AddGoalScreen() {
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Target Date</Text>
+          <Text style={[styles.label, { color: getColor('text.primary') }]}>Target Date</Text>
           <TouchableOpacity
-            style={styles.datePickerButton}
+            style={[styles.datePickerButton, { 
+              backgroundColor: getColor('card'),
+              borderColor: getColor('border')
+            }]}
             onPress={showDatepicker}
           >
-            <Calendar size={20} color="#3B82F6" />
-            <Text style={styles.dateText}>{formatDate(targetDate)}</Text>
+            <Calendar size={20} color={getColor('primary')} />
+            <Text style={[styles.dateText, { color: getColor('text.primary') }]}>{formatDate(targetDate)}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.formGroup}>
           <View style={styles.milestonesHeader}>
-            <Text style={styles.label}>Milestones</Text>
-            <Text style={styles.helperText}>Breaking your goal into steps</Text>
+            <Text style={[styles.label, { color: getColor('text.primary') }]}>Milestones</Text>
+            <Text style={[styles.helperText, { color: getColor('text.secondary') }]}>Breaking your goal into steps</Text>
           </View>
 
           <View style={styles.milestoneInputContainer}>
             <TextInput
-              style={styles.milestoneInput}
+              style={[styles.milestoneInput, { 
+                backgroundColor: getColor('card'),
+                borderColor: getColor('border'),
+                color: getColor('text.primary')
+              }]}
               value={newMilestone}
               onChangeText={setNewMilestone}
               placeholder="Add a milestone"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={getColor('text.secondary')}
               onSubmitEditing={handleAddMilestone}
             />
             <TouchableOpacity
-              style={styles.addMilestoneButton}
+              style={[styles.addMilestoneButton, { backgroundColor: getColor('primary') }]}
               onPress={handleAddMilestone}
             >
               <Plus size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.milestonesList}>
+          <View style={[styles.milestonesList, { 
+            backgroundColor: getColor('card'),
+            borderColor: getColor('border')
+          }]}>
             {milestones.map((milestone) => (
-              <View key={milestone.id} style={styles.milestoneItem}>
-                <View style={styles.milestoneIconContainer}>
-                  <Target size={16} color="#3B82F6" />
+              <View key={milestone.id} style={[styles.milestoneItem, { borderBottomColor: getColor('border') }]}>
+                <View style={[styles.milestoneIconContainer, { backgroundColor: getColor('button.primary') }]}>
+                  <Target size={16} color={getColor('primary')} />
                 </View>
-                <Text style={styles.milestoneTitle}>{milestone.title}</Text>
+                <Text style={[styles.milestoneTitle, { color: getColor('text.primary') }]}>{milestone.title}</Text>
                 <TouchableOpacity
                   onPress={() => handleRemoveMilestone(milestone.id)}
-                  style={styles.removeButton}
+                  style={[styles.removeButton, { backgroundColor: getColor('button.primary') }]}
                 >
-                  <Text style={styles.removeButtonText}>✕</Text>
+                  <Text style={[styles.removeButtonText, { color: getColor('text.secondary') }]}>✕</Text>
                 </TouchableOpacity>
               </View>
             ))}
             {milestones.length === 0 && (
-              <Text style={styles.noMilestonesText}>
+              <Text style={[styles.noMilestonesText, { color: getColor('text.secondary') }]}>
                 No milestones added yet. Break your goal into achievable steps.
               </Text>
             )}
@@ -195,33 +215,32 @@ export default function AddGoalScreen() {
         </View>
 
         <TouchableOpacity
-          style={styles.createButton}
+          style={[styles.createButton, { backgroundColor: getColor('primary') }]}
           onPress={handleCreateGoal}
         >
           <Text style={styles.createButtonText}>Create Goal</Text>
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Date picker handling based on platform */}
       {show && (Platform.OS === 'ios' ? (
         <Modal
           transparent={true}
           animationType="slide"
           visible={show}
         >
-          <View style={styles.datePickerModalContainer}>
-            <View style={styles.datePickerModal}>
-              <View style={styles.datePickerHeader}>
+          <View style={[styles.datePickerModalContainer, { backgroundColor: getColor('shadow') }]}>
+            <View style={[styles.datePickerModal, { backgroundColor: getColor('card') }]}>
+              <View style={[styles.datePickerHeader, { borderBottomColor: getColor('border') }]}>
                 <TouchableOpacity onPress={() => setShow(false)}>
-                  <Text style={styles.datePickerCancelButton}>Cancel</Text>
+                  <Text style={[styles.datePickerCancelButton, { color: getColor('primary') }]}>Cancel</Text>
                 </TouchableOpacity>
-                <Text style={styles.datePickerTitle}>Select Date</Text>
+                <Text style={[styles.datePickerTitle, { color: getColor('text.primary') }]}>Select Date</Text>
                 <TouchableOpacity
                   onPress={() => {
                     setShow(false);
                   }}
                 >
-                  <Text style={styles.datePickerDoneButton}>Done</Text>
+                  <Text style={[styles.datePickerDoneButton, { color: getColor('primary') }]}>Done</Text>
                 </TouchableOpacity>
               </View>
               <DateTimePicker
@@ -253,7 +272,6 @@ export default function AddGoalScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   contentContainer: {
     padding: 16,
@@ -264,24 +282,19 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
-    color: '#1E293B',
     marginBottom: 8,
   },
   helperText: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
   },
   input: {
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#1E293B',
   },
   textArea: {
     minHeight: 100,
@@ -297,19 +310,15 @@ const styles = StyleSheet.create({
   },
   milestoneInput: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#1E293B',
     marginRight: 8,
   },
   addMilestoneButton: {
-    backgroundColor: '#3B82F6',
     width: 44,
     height: 44,
     borderRadius: 8,
@@ -317,9 +326,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   milestonesList: {
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     borderRadius: 8,
     padding: 16,
   },
@@ -328,13 +335,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
   },
   milestoneIconContainer: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -343,33 +348,27 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#1E293B',
   },
   removeButton: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
   },
   removeButtonText: {
     fontFamily: 'Inter-Medium',
     fontSize: 12,
-    color: '#64748B',
   },
   noMilestonesText: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#94A3B8',
     textAlign: 'center',
     paddingVertical: 16,
   },
   datePickerButton: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -378,11 +377,9 @@ const styles = StyleSheet.create({
   dateText: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#1E293B',
     marginLeft: 8,
   },
   createButton: {
-    backgroundColor: '#3B82F6',
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
@@ -394,14 +391,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFFFFF',
   },
-  // New styles for date picker modal
   datePickerModalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   datePickerModal: {
-    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     paddingBottom: 20,
@@ -412,23 +406,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
   },
-
   datePickerTitle: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
-    color: '#1E293B',
   },
   datePickerCancelButton: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#3B82F6',
   },
   datePickerDoneButton: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
-    color: '#3B82F6',
   },
   datePickerIOS: {
     height: 220,

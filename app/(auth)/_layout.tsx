@@ -2,9 +2,11 @@ import React from 'react';
 import { Stack } from 'expo-router';
 import { useAuth } from '@/context/AuthProvider';
 import { Redirect } from 'expo-router';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function AuthLayout() {
   const { user, loading } = useAuth();
+  const { getColor } = useTheme();
 
   // Show loading state
   if (loading) {
@@ -20,7 +22,9 @@ export default function AuthLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right',
+        contentStyle: {
+          backgroundColor: getColor('background'),
+        },
       }}
     >
       <Stack.Screen name="login" />

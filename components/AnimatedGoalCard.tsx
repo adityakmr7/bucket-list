@@ -4,13 +4,8 @@ import { format } from 'date-fns';
 import { Goal } from '@/types/goal';
 import { Settings2, ChevronRight, Calendar } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import Animated, {
-  FadeInRight,
-  FadeOutLeft,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import { useTheme } from '@/context/ThemeContext';
+
 import AnimatedProgressCircle from './AnimatedProgressCircle';
 import { daysRemaining, formDateTime } from '@/utils';
 
@@ -22,23 +17,13 @@ interface GoalCardProps {
 
 export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps) {
   const router = useRouter();
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
+  const { getColor } = useTheme();
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.98);
   };
 
   const handlePressOut = () => {
-    scale.value = withSpring(1);
   };
-
-
 
   const handlePress = () => {
     if (onPress) {
@@ -53,10 +38,8 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
 
   const dayRemaing = daysRemaining(goal);
   return (
-    <Animated.View
-      entering={FadeInRight.delay(index * 100)}
-      exiting={FadeOutLeft}
-      style={[styles.cardContainer, animatedStyle]}
+    <View
+      style={[styles.cardContainer, { backgroundColor: getColor('card') }]}
     >
       <TouchableOpacity
         onPress={handlePress}
@@ -68,7 +51,7 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
         <View style={styles.contentContainer}>
           <View style={styles.headerRow}>
             <Text
-              style={styles.title}
+              style={[styles.title, { color: getColor('text.primary') }]}
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -78,12 +61,12 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
               style={styles.settingsButton}
               onPress={() => console.log('Edit goal')}
             >
-              <Settings2 size={18} color="#64748B" />
+              <Settings2 size={18} color={getColor('icon.primary')} />
             </TouchableOpacity>
           </View>
 
           <Text
-            style={styles.description}
+            style={[styles.description, { color: getColor('text.secondary') }]}
             numberOfLines={2}
             ellipsizeMode="tail"
           >
@@ -97,20 +80,20 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
                 size={80}
                 strokeWidth={8}
                 color={goal.color}
-                backgroundColor="#E2E8F0"
+                backgroundColor={getColor('border')}
               />
             </View>
 
             <View style={styles.infoContainer}>
               <View style={styles.dateContainer}>
-                <Calendar size={16} color="#64748B" />
-                <Text style={styles.dateText}>
+                <Calendar size={16} color={getColor('icon.primary')} />
+                <Text style={[styles.dateText, { color: getColor('text.secondary') }]}>
                   Target: {formDateTime(goal)}
                 </Text>
               </View>
 
               <View style={styles.milestoneInfo}>
-                <Text style={styles.milestoneText}>
+                <Text style={[styles.milestoneText, { color: getColor('text.secondary') }]}>
                   {goal.milestones.filter(m => m.completed).length} of {goal.milestones.length} milestones completed
                 </Text>
               </View>
@@ -123,24 +106,23 @@ export default function AnimatedGoalCard({ goal, onPress, index }: GoalCardProps
             </View>
           </View>
 
-          <View style={styles.footer}>
+          <View style={[styles.footer, { borderTopColor: getColor('border') }]}>
             <TouchableOpacity
               style={styles.detailsButton}
               onPress={handlePress}
             >
-              <Text style={styles.detailsText}>View Details</Text>
-              <ChevronRight size={16} color="#3B82F6" />
+              <Text style={[styles.detailsText, { color: getColor('primary') }]}>View Details</Text>
+              <ChevronRight size={16} color={getColor('primary')} />
             </TouchableOpacity>
           </View>
         </View>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     marginBottom: 16,
     overflow: 'hidden',
@@ -181,7 +163,6 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Inter-Bold',
     fontSize: 18,
-    color: '#1E293B',
     flex: 1,
   },
   settingsButton: {
@@ -190,7 +171,6 @@ const styles = StyleSheet.create({
   description: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
     marginBottom: 16,
     lineHeight: 20,
   },
@@ -214,7 +194,6 @@ const styles = StyleSheet.create({
   dateText: {
     fontFamily: 'Inter-Medium',
     fontSize: 13,
-    color: '#64748B',
     marginLeft: 6,
   },
   milestoneInfo: {
@@ -223,7 +202,6 @@ const styles = StyleSheet.create({
   milestoneText: {
     fontFamily: 'Inter-Regular',
     fontSize: 13,
-    color: '#64748B',
   },
   remainingContainer: {
     marginTop: 4,
@@ -234,7 +212,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
     paddingTop: 12,
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -246,7 +223,6 @@ const styles = StyleSheet.create({
   detailsText: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
-    color: '#3B82F6',
     marginRight: 4,
   },
 });

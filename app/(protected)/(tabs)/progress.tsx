@@ -3,10 +3,12 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useGoals } from '@/context/GoalContext';
 import ProgressCircle from '@/components/ProgressCircle';
 import { CalendarDays, TrendingUp, Award, Dumbbell, BookOpen, BriefcaseBusiness } from 'lucide-react-native';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function ProgressScreen() {
   const { goals } = useGoals();
   const [activeTab, setActiveTab] = useState<'overview' | 'categories'>('overview');
+  const { getColor } = useTheme();
 
   const calculateOverallProgress = () => {
     if (goals.length === 0) return 0;
@@ -72,50 +74,58 @@ export default function ProgressScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={[styles.container, { backgroundColor: getColor('background') }]} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Your Progress</Text>
-        <Text style={styles.headerSubtitle}>Track your journey toward your goals</Text>
+        <Text style={[styles.headerTitle, { color: getColor('text.primary') }]}>Your Progress</Text>
+        <Text style={[styles.headerSubtitle, { color: getColor('text.secondary') }]}>Track your journey toward your goals</Text>
       </View>
 
-      <View style={styles.overallProgressCard}>
+      <View style={[styles.overallProgressCard, { backgroundColor: getColor('card') }]}>
         <View style={styles.progressCircleContainer}>
           <ProgressCircle
             progress={calculateOverallProgress()}
             size={120}
             strokeWidth={12}
-            color="#3B82F6"
+            color={getColor('primary')}
           />
         </View>
         <View style={styles.overallStats}>
-          <Text style={styles.overallProgress}>{calculateOverallProgress()}%</Text>
-          <Text style={styles.overallLabel}>Overall Completion</Text>
-          <Text style={styles.goalCountText}>{goals.length} Active Goals</Text>
+          <Text style={[styles.overallProgress, { color: getColor('text.primary') }]}>{calculateOverallProgress()}%</Text>
+          <Text style={[styles.overallLabel, { color: getColor('primary') }]}>Overall Completion</Text>
+          <Text style={[styles.goalCountText, { color: getColor('text.secondary') }]}>{goals.length} Active Goals</Text>
         </View>
       </View>
 
-      <View style={styles.tabsContainer}>
+      <View style={[styles.tabsContainer, { backgroundColor: getColor('card') }]}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'overview' && styles.activeTab]}
+          style={[
+            styles.tab,
+            activeTab === 'overview' && { backgroundColor: getColor('button.primary') }
+          ]}
           onPress={() => setActiveTab('overview')}
         >
           <Text
             style={[
               styles.tabText,
-              activeTab === 'overview' && styles.activeTabText,
+              { color: getColor('text.secondary') },
+              activeTab === 'overview' && { color: getColor('primary') }
             ]}
           >
             Overview
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'categories' && styles.activeTab]}
+          style={[
+            styles.tab,
+            activeTab === 'categories' && { backgroundColor: getColor('button.primary') }
+          ]}
           onPress={() => setActiveTab('categories')}
         >
           <Text
             style={[
               styles.tabText,
-              activeTab === 'categories' && styles.activeTabText,
+              { color: getColor('text.secondary') },
+              activeTab === 'categories' && { color: getColor('primary') }
             ]}
           >
             By Category
@@ -125,35 +135,35 @@ export default function ProgressScreen() {
 
       {activeTab === 'overview' ? (
         <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: '#10B981' }]}>
+          <View style={[styles.statCard, { backgroundColor: getColor('card') }]}>
+            <View style={[styles.statIconContainer, { backgroundColor: getColor('status.success') }]}>
               <Award size={24} color="#FFFFFF" />
             </View>
-            <Text style={styles.statValue}>{completeGoalsCount}</Text>
-            <Text style={styles.statLabel}>Completed</Text>
+            <Text style={[styles.statValue, { color: getColor('text.primary') }]}>{completeGoalsCount}</Text>
+            <Text style={[styles.statLabel, { color: getColor('text.secondary') }]}>Completed</Text>
           </View>
 
-          <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: '#3B82F6' }]}>
+          <View style={[styles.statCard, { backgroundColor: getColor('card') }]}>
+            <View style={[styles.statIconContainer, { backgroundColor: getColor('primary') }]}>
               <TrendingUp size={24} color="#FFFFFF" />
             </View>
-            <Text style={styles.statValue}>{inProgressGoalsCount}</Text>
-            <Text style={styles.statLabel}>In Progress</Text>
+            <Text style={[styles.statValue, { color: getColor('text.primary') }]}>{inProgressGoalsCount}</Text>
+            <Text style={[styles.statLabel, { color: getColor('text.secondary') }]}>In Progress</Text>
           </View>
 
-          <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: '#94A3B8' }]}>
+          <View style={[styles.statCard, { backgroundColor: getColor('card') }]}>
+            <View style={[styles.statIconContainer, { backgroundColor: getColor('text.secondary') }]}>
               <CalendarDays size={24} color="#FFFFFF" />
             </View>
-            <Text style={styles.statValue}>{notStartedGoalsCount}</Text>
-            <Text style={styles.statLabel}>Not Started</Text>
+            <Text style={[styles.statValue, { color: getColor('text.primary') }]}>{notStartedGoalsCount}</Text>
+            <Text style={[styles.statLabel, { color: getColor('text.secondary') }]}>Not Started</Text>
           </View>
         </View>
       ) : (
         <View style={styles.categoriesContainer}>
           {categoryProgressData.length > 0 ? (
             categoryProgressData.map(({ category, progress, count }) => (
-              <View key={category} style={styles.categoryCard}>
+              <View key={category} style={[styles.categoryCard, { backgroundColor: getColor('card') }]}>
                 <View style={styles.categoryHeader}>
                   <View 
                     style={[
@@ -164,24 +174,24 @@ export default function ProgressScreen() {
                     {getCategoryIcon(category)}
                   </View>
                   <View style={styles.categoryInfo}>
-                    <Text style={styles.categoryName}>
+                    <Text style={[styles.categoryName, { color: getColor('text.primary') }]}>
                       {category.charAt(0).toUpperCase() + category.slice(1)}
                     </Text>
-                    <Text style={styles.categoryCount}>{count} goals</Text>
+                    <Text style={[styles.categoryCount, { color: getColor('text.secondary') }]}>{count} goals</Text>
                   </View>
                   <ProgressCircle
                     progress={progress}
                     size={50}
                     strokeWidth={5}
                     color={getCategoryColor(category)}
-                    backgroundColor="#E2E8F0"
+                    backgroundColor={getColor('border')}
                   />
                 </View>
               </View>
             ))
           ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>
+            <View style={[styles.emptyState, { backgroundColor: getColor('card') }]}>
+              <Text style={[styles.emptyStateText, { color: getColor('text.secondary') }]}>
                 No goal categories to display yet
               </Text>
             </View>
@@ -195,7 +205,6 @@ export default function ProgressScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   contentContainer: {
     padding: 16,
@@ -206,16 +215,13 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    color: '#1E293B',
     marginBottom: 4,
   },
   headerSubtitle: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#64748B',
   },
   overallProgressCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 24,
     flexDirection: 'row',
@@ -236,23 +242,19 @@ const styles = StyleSheet.create({
   overallProgress: {
     fontFamily: 'Inter-Bold',
     fontSize: 32,
-    color: '#1E293B',
     marginBottom: 4,
   },
   overallLabel: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,
-    color: '#3B82F6',
     marginBottom: 8,
   },
   goalCountText: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
   },
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
     borderRadius: 100,
     marginBottom: 24,
     padding: 4,
@@ -268,16 +270,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 100,
   },
-  activeTab: {
-    backgroundColor: '#EFF6FF',
-  },
   tabText: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
-    color: '#64748B',
-  },
-  activeTabText: {
-    color: '#3B82F6',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -285,7 +280,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   statCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     flex: 1,
@@ -308,20 +302,17 @@ const styles = StyleSheet.create({
   statValue: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    color: '#1E293B',
     marginBottom: 4,
   },
   statLabel: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
     textAlign: 'center',
   },
   categoriesContainer: {
     marginBottom: 24,
   },
   categoryCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -349,16 +340,13 @@ const styles = StyleSheet.create({
   categoryName: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
-    color: '#1E293B',
     marginBottom: 4,
   },
   categoryCount: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
   },
   emptyState: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
@@ -367,7 +355,6 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,
-    color: '#64748B',
     textAlign: 'center',
   },
 });

@@ -1,134 +1,143 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthProvider';
+import { useTheme } from '@/context/ThemeContext';
+import { Mail, Lock } from 'lucide-react-native';
 
-export default function Login() {
+export default function LoginScreen() {
+    const router = useRouter();
+    const { login } = useAuth();
+    const { getColor } = useTheme();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const { login } = useAuth();
-    const router = useRouter();
-    const [isNavigating, setIsNavigating] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleLogin = async () => {
-
         if (!email || !password) {
-            Alert.alert('Error', 'Please fill in all fields');
+            setError('Please fill in all fields');
             return;
         }
 
-        setIsLoading(true);
+        setLoading(true);
+        setError('');
+
         try {
-            await login(email, password)
-            setIsNavigating(true);
-            router.replace('/');
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'An error occurred during login';
-            Alert.alert('Error', errorMessage);
+            await login(email, password);
+        } catch (err) {
+            setError('Invalid email or password');
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
-    };
-
-    const validatePassword = (password: string) => {
-        if (password.length < 6) {
-            return 'Password must be at least 6 characters';
-        }
-        return null;
-    };
-
-    const validateEmail = (email: string) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return 'Invalid email format';
-        }
-        return null;
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Login</Text>
+        <View className="flex-1" style={{ backgroundColor: getColor('background') }}>
+            <View className="flex-1 p-6 justify-center">
+                <View className="mb-8">
+                    <Text
+                        className="font-['Inter-Bold'] text-3xl mb-2"
+                        style={{ color: getColor('text.primary') }}
+                    >
+                        Welcome Back
+                    </Text>
+                    <Text
+                        className="font-['Inter-Regular'] text-base"
+                        style={{ color: getColor('text.secondary') }}
+                    >
+                        Sign in to continue
+                    </Text>
+                </View>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-            />
+                <View className="space-y-4">
+                    <View className="space-y-2">
+                        <Text
+                            className="font-['Inter-Medium'] pb-2 text-sm"
+                            style={{ color: getColor('text.primary') }}
+                        >
+                            Email
+                        </Text>
+                        <View
+                            className="flex-row items-center p-4 rounded-xl"
+                            style={{ backgroundColor: getColor('card') }}
+                        >
+                            <Mail size={20} color={getColor('icon.primary')} />
+                            <TextInput
+                                className="flex-1 ml-3 font-['Inter-Regular'] "
+                                placeholder="Enter your email"
+                                placeholderTextColor={getColor('text.secondary')}
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                style={{ color: getColor('text.primary') }}
+                            />
+                        </View>
+                    </View>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
+                    <View className="space-y-2">
+                        <Text
+                            className="font-['Inter-Medium'] py-2 text-sm"
+                            style={{ color: getColor('text.primary') }}
+                        >
+                            Password
+                        </Text>
+                        <View
+                            className="flex-row items-center p-4 rounded-xl"
+                            style={{ backgroundColor: getColor('card') }}
+                        >
+                            <Lock size={20} color={getColor('icon.primary')} />
+                            <TextInput
+                                className="flex-1 ml-3 font-['Inter-Regular']"
+                                placeholder="Enter your password"
+                                placeholderTextColor={getColor('text.secondary')}
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                style={{ color: getColor('text.primary') }}
+                            />
+                        </View>
+                    </View>
 
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleLogin}
-                disabled={isLoading}
-            >
-                <Text style={styles.buttonText}>
-                    {isLoading ? 'Logging in...' : 'Login'}
-                </Text>
-            </TouchableOpacity>
+                    {error ? (
+                        <Text
 
-            <View style={styles.registerContainer}>
-                <Text>Don't have an account? </Text>
-                <Link href="/register" asChild>
-                    <TouchableOpacity>
-                        <Text style={styles.registerText}>Register</Text>
+                            className="font-['Inter-Medium'] pt-4 text-sm text-center"
+                            style={{ color: getColor('status.error') }}
+                        >
+                            {error}
+                        </Text>
+                    ) : null}
+
+                    <TouchableOpacity
+                        className="p-4 rounded-xl items-center mt-4"
+                        style={{ backgroundColor: getColor('primary') }}
+                        onPress={handleLogin}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="#FFFFFF" />
+                        ) : (
+                            <Text className="font-['Inter-SemiBold'] text-base text-white">
+                                Sign In
+                            </Text>
+                        )}
                     </TouchableOpacity>
-                </Link>
+
+                    <TouchableOpacity
+                        className="mt-4"
+                        onPress={() => router.push('/(auth)/register')}
+                    >
+                        <Text
+                            className="font-['Inter-Medium'] text-base text-center"
+                            style={{ color: getColor('primary') }}
+                        >
+                            Don't have an account? Sign Up
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    input: {
-        height: 50,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        marginBottom: 15,
-        paddingHorizontal: 10,
-    },
-    button: {
-        backgroundColor: '#007BFF',
-        height: 50,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 10,
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    registerContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginTop: 20,
-    },
-    registerText: {
-        color: '#007BFF',
-        fontWeight: 'bold',
-    },
-});

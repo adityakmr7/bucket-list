@@ -48,11 +48,12 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     useEffect(() => {
         console.log("Setting up auth state listener");
         const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-
+            console.log('data======', session?.user)
             if (session) {
                 const userData: User = {
                     id: session.user.id,
                     email: session.user?.email || '',
+                    name: session?.user?.user_metadata?.full_name,
                 };
                 setUser(userData);
                 try {

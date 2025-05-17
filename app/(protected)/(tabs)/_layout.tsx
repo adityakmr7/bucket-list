@@ -4,9 +4,13 @@ import { Platform } from 'react-native';
 import { ChartBar as BarChart3, Chrome as Home, Plus, Target, User } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthProvider';
 import { Redirect } from 'expo-router';
+import { useTheme } from '@/context/ThemeContext';
+import { BottomTabHeaderProps } from '@react-navigation/bottom-tabs'
+import AppHeader from '@/components/AppHeader';
 
 export default function TabLayout() {
   const { user } = useAuth();
+  const { getColor } = useTheme();
 
   // If user is not authenticated, redirect to auth
   if (!user) {
@@ -16,12 +20,15 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#3B82F6',
-        tabBarInactiveTintColor: '#64748B',
+        header: (props: BottomTabHeaderProps) => <AppHeader name={user?.name || ''} headerProps={props} />,
+        tabBarActiveTintColor: getColor('primary'),
+        tabBarInactiveTintColor: getColor('text.secondary'),
         tabBarStyle: {
           height: Platform.OS === 'ios' ? 90 : 65,
           paddingBottom: Platform.OS === 'ios' ? 30 : 10,
           paddingTop: 10,
+          backgroundColor: getColor('card'),
+          borderTopColor: getColor('border'),
         },
         tabBarLabelStyle: {
           fontFamily: 'Inter-Medium',
@@ -34,11 +41,13 @@ export default function TabLayout() {
           shadowOffset: { width: 0, height: 2 },
           shadowRadius: 4,
           elevation: 0,
+          backgroundColor: getColor('card'),
+          borderBottomColor: getColor('border'),
         },
         headerTitleStyle: {
           fontFamily: 'Inter-SemiBold',
           fontSize: 18,
-
+          color: getColor('text.primary'),
         },
         headerTitleAlign: 'center',
       }}
@@ -87,17 +96,7 @@ export default function TabLayout() {
           headerShown: true,
         }}
       />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <User color={color} size={size} />
-          ),
-          headerTitle: 'Profile',
-          headerShown: true,
-        }}
-      />
+
     </Tabs>
   );
 }
