@@ -1,135 +1,166 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Link } from 'expo-router';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthProvider';
+import { useTheme } from '@/context/ThemeContext';
+import { Mail, Lock, User } from 'lucide-react-native';
 
-export default function Register() {
-    const [name, setName] = useState('');
+export default function RegisterScreen() {
+    const router = useRouter();
+    const { register } = useAuth();
+    const { getColor } = useTheme();
+    const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const { register } = useAuth();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleRegister = async () => {
-        if (!name || !email || !password || !confirmPassword) {
-            Alert.alert('Error', 'Please fill in all fields');
+        if (!fullName || !email || !password) {
+            setError('Please fill in all fields');
             return;
         }
 
-        if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
-            return;
-        }
+        setLoading(true);
+        setError('');
 
-        setIsLoading(true);
         try {
-            await register(email, password, name);
-        } catch (error) {
-            Alert.alert('Error', 'An error occurred during registration');
+            await register(email, password, fullName);
+        } catch (err) {
+            setError('Failed to create account');
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Create Account</Text>
+        <View className="flex-1" style={{ backgroundColor: getColor('background') }}>
+            <View className="flex-1 p-6 justify-center">
+                <View className="mb-8">
+                    <Text
+                        className="font-['Inter-Bold'] text-3xl mb-2"
+                        style={{ color: getColor('text.primary') }}
+                    >
+                        Create Account
+                    </Text>
+                    <Text
+                        className="font-['Inter-Regular'] text-base"
+                        style={{ color: getColor('text.secondary') }}
+                    >
+                        Sign up to get started
+                    </Text>
+                </View>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Full Name"
-                value={name}
-                onChangeText={setName}
-            />
+                <View className="space-y-4">
+                    <View className="space-y-2">
+                        <Text
+                            className="font-['Inter-Medium'] py-2 text-sm"
+                            style={{ color: getColor('text.primary') }}
+                        >
+                            Full Name
+                        </Text>
+                        <View
+                            className="flex-row items-center p-4 rounded-xl"
+                            style={{ backgroundColor: getColor('card') }}
+                        >
+                            <User size={20} color={getColor('icon.primary')} />
+                            <TextInput
+                                className="flex-1 ml-3 font-['Inter-Regular'] "
+                                placeholder="Enter your full name"
+                                placeholderTextColor={getColor('text.secondary')}
+                                value={fullName}
+                                onChangeText={setFullName}
+                                style={{ color: getColor('text.primary') }}
+                            />
+                        </View>
+                    </View>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-            />
+                    <View className="space-y-2">
+                        <Text
+                            className="font-['Inter-Medium'] text-sm py-2"
+                            style={{ color: getColor('text.primary') }}
+                        >
+                            Email
+                        </Text>
+                        <View
+                            className="flex-row items-center p-4 rounded-xl"
+                            style={{ backgroundColor: getColor('card') }}
+                        >
+                            <Mail size={20} color={getColor('icon.primary')} />
+                            <TextInput
+                                className="flex-1 ml-3 font-['Inter-Regular'] "
+                                placeholder="Enter your email"
+                                placeholderTextColor={getColor('text.secondary')}
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                style={{ color: getColor('text.primary') }}
+                            />
+                        </View>
+                    </View>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
+                    <View className="space-y-2">
+                        <Text
+                            className="font-['Inter-Medium'] text-sm py-2"
+                            style={{ color: getColor('text.primary') }}
+                        >
+                            Password
+                        </Text>
+                        <View
+                            className="flex-row items-center p-4 rounded-xl"
+                            style={{ backgroundColor: getColor('card') }}
+                        >
+                            <Lock size={20} color={getColor('icon.primary')} />
+                            <TextInput
+                                className="flex-1 ml-3 font-['Inter-Regular'] "
+                                placeholder="Create a password"
+                                placeholderTextColor={getColor('text.secondary')}
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                style={{ color: getColor('text.primary') }}
+                            />
+                        </View>
+                    </View>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-            />
+                    {error ? (
+                        <Text
+                            className="font-['Inter-Medium'] text-sm pt-4 text-center"
+                            style={{ color: getColor('status.error') }}
+                        >
+                            {error}
+                        </Text>
+                    ) : null}
 
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleRegister}
-                disabled={isLoading}
-            >
-                <Text style={styles.buttonText}>
-                    {isLoading ? 'Creating Account...' : 'Register'}
-                </Text>
-            </TouchableOpacity>
-
-            <View style={styles.loginContainer}>
-                <Text>Already have an account? </Text>
-                <Link href="/login" asChild>
-                    <TouchableOpacity>
-                        <Text style={styles.loginText}>Login</Text>
+                    <TouchableOpacity
+                        className="p-4 rounded-xl items-center mt-4"
+                        style={{ backgroundColor: getColor('primary') }}
+                        onPress={handleRegister}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="#FFFFFF" />
+                        ) : (
+                            <Text className="font-['Inter-SemiBold'] text-base text-white">
+                                Create Account
+                            </Text>
+                        )}
                     </TouchableOpacity>
-                </Link>
+
+                    <TouchableOpacity
+                        className="mt-4"
+                        onPress={() => router.push('/(auth)/login')}
+                    >
+                        <Text
+                            className="font-['Inter-Medium'] text-base text-center"
+                            style={{ color: getColor('primary') }}
+                        >
+                            Already have an account? Sign In
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    input: {
-        height: 50,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        marginBottom: 15,
-        paddingHorizontal: 10,
-    },
-    button: {
-        backgroundColor: '#007BFF',
-        height: 50,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 10,
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    loginContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginTop: 20,
-    },
-    loginText: {
-        color: '#007BFF',
-        fontWeight: 'bold',
-    },
-});
