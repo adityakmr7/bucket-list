@@ -7,11 +7,14 @@ import { SplashScreen } from 'expo-router';
 import { Platform } from 'react-native';
 import { GoalProvider } from '@/context/GoalContext';
 import { AuthProvider } from '@/context/AuthProvider';
-import { Provider } from 'react-redux'
+import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import "@/global.css";
+
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayoutContent() {
+  const { isDark } = useTheme();
   useFrameworkReady();
 
   const [fontsLoaded, fontError] = useFonts({
@@ -36,8 +39,9 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <GoalProvider>
-        <StatusBar style={Platform.OS === 'ios' ? 'dark' : 'auto'} />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
         <Stack>
+          <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(goalDetails)" options={{ headerShown: false }} />
@@ -45,5 +49,13 @@ export default function RootLayout() {
         </Stack>
       </GoalProvider>
     </AuthProvider>
-  )
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutContent />
+    </ThemeProvider>
+  );
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { GoalCategory, CATEGORY_COLORS, CATEGORY_ICONS } from '@/types/goal';
 import { BookOpen, Briefcase, DollarSign, Dumbbell, Heart, HeartPulse, MapPin, PenTool, User } from 'lucide-react-native';
+import { useTheme } from '@/context/ThemeContext';
 
 interface CategoryPickerProps {
   selectedCategory: GoalCategory | null;
@@ -12,6 +13,7 @@ export default function CategoryPicker({
   selectedCategory,
   onSelectCategory,
 }: CategoryPickerProps) {
+  const { getColor } = useTheme();
   const categories: { value: GoalCategory; label: string }[] = [
     { value: 'fitness', label: 'Fitness' },
     { value: 'career', label: 'Career' },
@@ -64,7 +66,7 @@ export default function CategoryPicker({
               backgroundColor:
                 selectedCategory === category.value
                   ? CATEGORY_COLORS[category.value]
-                  : '#F1F5F9',
+                  : getColor('button.primary'),
             },
           ]}
           onPress={() => onSelectCategory(category.value)}
@@ -87,7 +89,7 @@ export default function CategoryPicker({
               styles.categoryText,
               {
                 color:
-                  selectedCategory === category.value ? '#FFFFFF' : '#64748B',
+                  selectedCategory === category.value ? '#FFFFFF' : getColor('text.secondary'),
               },
             ]}
           >

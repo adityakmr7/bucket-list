@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { CircleCheck as CheckCircle, Circle, Trash2 } from 'lucide-react-native';
 import { Milestone } from '@/types/goal';
+import { useTheme } from '@/context/ThemeContext';
 
 interface MilestoneItemProps {
   milestone: Milestone;
@@ -16,8 +17,10 @@ export default function MilestoneItem({
   onDelete,
   color = '#3B82F6',
 }: MilestoneItemProps) {
+  const { getColor } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { borderBottomColor: getColor('border') }]}>
       <TouchableOpacity
         style={styles.checkContainer}
         onPress={onToggle}
@@ -26,25 +29,27 @@ export default function MilestoneItem({
         {milestone.completed ? (
           <CheckCircle size={24} color={color} />
         ) : (
-          <Circle size={24} color="#94A3B8" />
+          <Circle size={24} color={getColor('icon.primary')} />
         )}
       </TouchableOpacity>
-      
+
       <View style={styles.contentContainer}>
         <Text
           style={[
             styles.title,
-            milestone.completed && styles.completedTitle,
+            { color: getColor('text.primary') },
+            milestone.completed && { color: getColor('text.secondary') }
           ]}
         >
           {milestone.title}
         </Text>
-        
+
         {milestone.description && (
           <Text
             style={[
               styles.description,
-              milestone.completed && styles.completedDescription,
+              { color: getColor('text.secondary') },
+              milestone.completed && { color: getColor('text.secondary') }
             ]}
             numberOfLines={2}
           >
@@ -52,13 +57,13 @@ export default function MilestoneItem({
           </Text>
         )}
       </View>
-      
+
       <TouchableOpacity
         style={styles.deleteButton}
         onPress={onDelete}
         hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
       >
-        <Trash2 size={18} color="#94A3B8" />
+        <Trash2 size={18} color={getColor('icon.primary')} />
       </TouchableOpacity>
     </View>
   );
@@ -70,7 +75,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
   },
   checkContainer: {
     marginRight: 12,
@@ -81,22 +85,12 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,
-    color: '#1E293B',
     marginBottom: 4,
-  },
-  completedTitle: {
-    textDecorationLine: 'line-through',
-    color: '#94A3B8',
   },
   description: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
     lineHeight: 20,
-  },
-  completedDescription: {
-    textDecorationLine: 'line-through',
-    color: '#94A3B8',
   },
   deleteButton: {
     padding: 8,

@@ -4,10 +4,12 @@ import { useGoals } from '@/context/GoalContext';
 import GoalCard from '@/components/GoalCard';
 import { Target, CirclePlus as PlusCircle, Trophy } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function Dashboard() {
   const { goals } = useGoals();
   const router = useRouter();
+  const { getColor } = useTheme();
 
   // Calculate overall progress across all goals
   const overallProgress = goals.length > 0
@@ -24,43 +26,43 @@ export default function Dashboard() {
   const completedGoals = goals.filter(goal => goal.progress === 100).length;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={[styles.container, { backgroundColor: getColor('background') }]} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hello there!</Text>
-        <Text style={styles.subGreeting}>Track your life goals and make progress daily</Text>
+        <Text style={[styles.greeting, { color: getColor('text.primary') }]}>Hello there!</Text>
+        <Text style={[styles.subGreeting, { color: getColor('text.secondary') }]}>Track your life goals and make progress daily</Text>
       </View>
 
       <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <View style={styles.statIconContainer}>
-            <Target size={24} color="#3B82F6" />
+        <View style={[styles.statCard, { backgroundColor: getColor('card') }]}>
+          <View style={[styles.statIconContainer, { backgroundColor: getColor('button.primary') }]}>
+            <Target size={24} color={getColor('primary')} />
           </View>
-          <Text style={styles.statValue}>{goals.length}</Text>
-          <Text style={styles.statLabel}>Active Goals</Text>
+          <Text style={[styles.statValue, { color: getColor('text.primary') }]}>{goals.length}</Text>
+          <Text style={[styles.statLabel, { color: getColor('text.secondary') }]}>Active Goals</Text>
         </View>
 
-        <View style={styles.statCard}>
-          <View style={[styles.statIconContainer, { backgroundColor: '#EBFBEE' }]}>
-            <Trophy size={24} color="#10B981" />
+        <View style={[styles.statCard, { backgroundColor: getColor('card') }]}>
+          <View style={[styles.statIconContainer, { backgroundColor: getColor('status.success') }]}>
+            <Trophy size={24} color={getColor('status.success')} />
           </View>
-          <Text style={styles.statValue}>{completedGoals}</Text>
-          <Text style={styles.statLabel}>Completed</Text>
+          <Text style={[styles.statValue, { color: getColor('text.primary') }]}>{completedGoals}</Text>
+          <Text style={[styles.statLabel, { color: getColor('text.secondary') }]}>Completed</Text>
         </View>
 
-        <View style={styles.statCard}>
-          <View style={styles.progressCircle}>
-            <Text style={styles.progressText}>{overallProgress}%</Text>
+        <View style={[styles.statCard, { backgroundColor: getColor('card') }]}>
+          <View style={[styles.progressCircle, { borderColor: getColor('primary') }]}>
+            <Text style={[styles.progressText, { color: getColor('primary') }]}>{overallProgress}%</Text>
           </View>
-          <Text style={styles.statLabel}>Overall Progress</Text>
+          <Text style={[styles.statLabel, { color: getColor('text.secondary') }]}>Overall Progress</Text>
         </View>
       </View>
 
       {upcomingDeadline && (
         <View style={styles.deadlineContainer}>
-          <Text style={styles.sectionTitle}>Next Deadline</Text>
-          <View style={styles.deadlineCard}>
-            <Text style={styles.deadlineGoal}>{upcomingDeadline.title}</Text>
-            <Text style={styles.deadlineDate}>
+          <Text style={[styles.sectionTitle, { color: getColor('text.primary') }]}>Next Deadline</Text>
+          <View className='mt-6' style={[styles.deadlineCard, { backgroundColor: getColor('card') }]}>
+            <Text style={[styles.deadlineGoal, { color: getColor('text.primary') }]}>{upcomingDeadline.title}</Text>
+            <Text style={[styles.deadlineDate, { color: getColor('status.error') }]}>
               {new Date(upcomingDeadline.target).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
@@ -73,9 +75,9 @@ export default function Dashboard() {
 
       <View style={styles.recentContainer}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Goals</Text>
+          <Text style={[styles.sectionTitle, { color: getColor('text.primary') }]}>Recent Goals</Text>
           <TouchableOpacity onPress={() => router.push('/goals')}>
-            <Text style={styles.viewAllText}>View All</Text>
+            <Text style={[styles.viewAllText, { color: getColor('primary') }]}>View All</Text>
           </TouchableOpacity>
         </View>
 
@@ -84,10 +86,10 @@ export default function Dashboard() {
             .slice(0, 3)
             .map(goal => <GoalCard key={goal.id} goal={goal} />)
         ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No goals created yet</Text>
+          <View style={[styles.emptyContainer, { backgroundColor: getColor('card') }]}>
+            <Text style={[styles.emptyText, { color: getColor('text.secondary') }]}>No goals created yet</Text>
             <TouchableOpacity
-              style={styles.createButton}
+              style={[styles.createButton, { backgroundColor: getColor('primary') }]}
               onPress={() => router.push('/add')}
             >
               <PlusCircle size={18} color="#FFFFFF" />
@@ -103,7 +105,6 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   contentContainer: {
     padding: 16,
@@ -114,13 +115,11 @@ const styles = StyleSheet.create({
   greeting: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    color: '#1E293B',
     marginBottom: 4,
   },
   subGreeting: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#64748B',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -128,7 +127,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   statCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     flex: 1,
@@ -144,7 +142,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -154,7 +151,6 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     borderWidth: 3,
-    borderColor: '#3B82F6',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -162,25 +158,21 @@ const styles = StyleSheet.create({
   progressText: {
     fontFamily: 'Inter-Bold',
     fontSize: 14,
-    color: '#3B82F6',
   },
   statValue: {
     fontFamily: 'Inter-Bold',
     fontSize: 20,
-    color: '#1E293B',
     marginBottom: 4,
   },
   statLabel: {
     fontFamily: 'Inter-Regular',
     fontSize: 12,
-    color: '#64748B',
     textAlign: 'center',
   },
   deadlineContainer: {
     marginBottom: 24,
   },
   deadlineCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
@@ -192,13 +184,11 @@ const styles = StyleSheet.create({
   deadlineGoal: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
-    color: '#1E293B',
     marginBottom: 8,
   },
   deadlineDate: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#F43F5E',
   },
   recentContainer: {
     marginBottom: 16,
@@ -212,15 +202,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 18,
-    color: '#1E293B',
   },
   viewAllText: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
-    color: '#3B82F6',
   },
   emptyContainer: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
@@ -233,13 +220,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,
-    color: '#64748B',
     marginBottom: 16,
   },
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#3B82F6',
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 100,
